@@ -1,0 +1,20 @@
+{
+  "name": "kids-world-backend",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/efim1382/kids-world-backend.git"
+  },
+  "author": "efim1382@gmail.com",
+  "license": "ISC",
+  "homepage": "https://github.com/efim1382/kids-world-backend#readme",
+  "dependencies": {
+    "express": "^4.15.3",
+    "mongodb": "^2.2.28",
+    "mongoose": "^4.10.4"
+  }
+}
