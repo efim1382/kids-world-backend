@@ -1,8 +1,8 @@
 var express = require('express');
 var app = express();
 var port = 8000;
-
-require('./database')();
+var bodyParser = require('body-parser');
+var db = require('./database')();
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -10,9 +10,16 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.get('/', function (req, res) {
-  res.send('Hello World!');
-});
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
+app.use(bodyParser.json());
+
+require('./api')(app);
+
+var AdvertModel = require('./models/Advert')();
+// AdvertModel.clearTable();
+AdvertModel.getAll().then(value => console.log(value));
 
 app.listen(port, function () {
   console.log('Example app listening on port: ' + port);

@@ -1,5 +1,11 @@
 module.exports = function() {
-	var mongoose = require('mongoose');
+  var mongoose = require('mongoose');
+
+  if (mongoose.connection.readyState) {
+    return mongoose.connection;
+  }
+
+  mongoose.Promise = global.Promise;
 	mongoose.connect('mongodb://localhost/kids-world');
 	var db = mongoose.connection;
 
@@ -7,4 +13,6 @@ module.exports = function() {
 	db.once('open', function() {
 	  console.log('Database connected!');
 	});
+
+  return db;
 };
