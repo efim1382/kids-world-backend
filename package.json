@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "description": "",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "seed": "node ./seed/index.js"
   },
   "repository": {
     "type": "git",

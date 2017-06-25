@@ -12,7 +12,6 @@ module.exports = function() {
     price: Number,
     category: String,
     adress: String,
-    category: String,
     description: String,
   });
 
@@ -21,7 +20,7 @@ module.exports = function() {
   AdvertModel.__proto__.save = function(data) {
     var newAdvert = new AdvertModel.Advert(data);
 
-    newAdvert.save(function (error, newAd) {
+    return newAdvert.save(function (error, newAd) {
       if (error) {
         console.log("Something goes wrong with advert save " + newAd);
       }
@@ -37,8 +36,11 @@ module.exports = function() {
   };
 
   AdvertModel.__proto__.clearTable = function() {
-    db.collections['adverts'].drop(function(err) {
-      console.log('Adverts removed');
+    return new Promise((resolve, reject) => {
+      db.collections['adverts'].drop(function(err) {
+        console.log('Adverts removed');
+      });
+      resolve();
     });
   };
 
