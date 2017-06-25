@@ -18,7 +18,6 @@ app.use(bodyParser.json());
 require('./api')(app);
 
 var AdvertModel = require('./models/Advert')();
-// AdvertModel.clearTable();
 AdvertModel.getAll().then(value => console.log(value));
 
 app.listen(port, function () {

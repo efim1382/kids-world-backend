@@ -11,4 +11,12 @@ module.exports = function(app) {
     AdvertModel.save(req.body);
     res.send("Сохранено");
   });
+
+  app.post('/api/v1/auth/login/', function(req, res) {
+    res.send("Авторизован");
+  });
+
+  app.post('/api/v1/auth/register/', function(req, res) {
+    res.send("Зарегистрирован");
+  });
 };
