@@ -11,7 +11,7 @@ AdvertModel.clearTable().then(() => {
     date: '25 января, 2017',
     price: 1500,
     category: 'Детская одежда',
-    adress: 'Ростов-на-Дону, Красноармейская, 55',
+    address: 'Ростов-на-Дону, Красноармейская, 55',
     description: 'Хорошая шапка, новая почти',
   }).then(() => {
     AdvertModel.save({
@@ -22,7 +22,7 @@ AdvertModel.clearTable().then(() => {
       date: '25 января, 2017',
       price: 1500,
       category: 'Детская одежда',
-      adress: 'Ростов-на-Дону, Красноармейская, 55',
+      address: 'Ростов-на-Дону, Красноармейская, 55',
       description: 'Хорошая шапка, новая почти',
     }).then(() => {
       AdvertModel.getAll().then(value => console.log(value));

@@ -11,7 +11,7 @@ module.exports = function() {
     date: String,
     price: Number,
     category: String,
-    adress: String,
+    address: String,
     description: String,
   });
 
