@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "start": "node server.js",
-    "seed": "node ./seed/index.js"
+    "clear": "node clear.js"
   },
   "repository": {
     "type": "git",

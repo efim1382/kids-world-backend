@@ -1,8 +1,9 @@
-var express = require('express');
-var app = express();
-var port = 8000;
-var bodyParser = require('body-parser');
-var db = require('./database')();
+const express = require('express');
+const app = express();
+const port = 8000;
+const bodyParser = require('body-parser');
+const db = require('./src/database')();
+require('./src/models/_all')();
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -15,10 +16,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
-require('./api')(app);
-
-var AdvertModel = require('./models/Advert')();
-AdvertModel.getAll().then(value => console.log(value));
+require('./src/api')(app);
 
 app.listen(port, function () {
   console.log('Example app listening on port: ' + port);

@@ -1,5 +1,5 @@
 module.exports = function() {
-  var mongoose = require('mongoose');
+  const mongoose = require('mongoose');
 
   if (mongoose.connection.readyState) {
     return mongoose.connection;
@@ -7,7 +7,7 @@ module.exports = function() {
 
   mongoose.Promise = global.Promise;
 	mongoose.connect('mongodb://localhost/kids-world');
-	var db = mongoose.connection;
+	const db = mongoose.connection;
 
 	db.on('error', console.error.bind(console, 'Connection error:'));
 	db.once('open', function() {
