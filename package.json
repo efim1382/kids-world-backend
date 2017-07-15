@@ -4,6 +4,7 @@
   "description": "",
   "scripts": {
     "start": "node server.js",
+    "seed": "npm run clear && node seed.js",
     "clear": "node clear.js"
   },
   "repository": {

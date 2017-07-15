@@ -12,4 +12,4 @@ const AdvertSchema = new mongoose.Schema({
   description: String,
 });
 
-module.exports = mongoose.model('Adverts', AdvertSchema);
+module.exports = mongoose.model('Advert', AdvertSchema);

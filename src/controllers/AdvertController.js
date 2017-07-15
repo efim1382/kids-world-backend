@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Advert = mongoose.model('Adverts');
+const Advert = mongoose.model('Advert');
 
 exports.getAllAdverts = function(req, res) {
   Advert.find({}, function(err, advert) {
