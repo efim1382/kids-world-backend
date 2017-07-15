@@ -8,6 +8,8 @@ module.exports = function(app) {
 
   app.route(`${urlPath}/auth/login`).post(User.login);
   app.route(`${urlPath}/auth/register`).post(User.register);
-  app.route(`${urlPath}/auth/users`).get(User.getUsers);
-  app.route(`${urlPath}/auth/users/me`).post(User.getCurrentUser);
+  
+  app.route(`${urlPath}/users`).get(User.getUsers);
+  app.route(`${urlPath}/users/:id`).get(User.getOneUser);
+  app.route(`${urlPath}/users/me`).post(User.getCurrentUser);
 };
