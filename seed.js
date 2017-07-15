@@ -1,6 +1,7 @@
 const db = require('./src/database')();
 require('./src/models/_all')();
 const mongoose = require('mongoose');
+const uuidv4 = require('uuid/v4');
 const Advert = mongoose.model('Advert');
 const User = mongoose.model('User');
 
@@ -23,6 +24,7 @@ let seed = new Promise((resolve, reject) => {
     email: 'email@mail.ru',
     address: 'Красноармейская, 212',
     photo: '/images/user-image.jpg',
+    token: uuidv4(),
   });
 
   newAdvert.save().then(adverts => {
