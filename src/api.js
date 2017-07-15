@@ -6,6 +6,6 @@ module.exports = function(app) {
   app.route(`${uriPath}/adverts`).get(Advert.getAllAdverts);
   app.route(`${uriPath}/adverts/add`).post(Advert.addAdvert);
 
-  // app.route(`${uriPath}/auth/login`).post(User.login);
+  app.route(`${uriPath}/auth/login`).post(User.login);
   app.route(`${uriPath}/auth/register`).post(User.addUser);
 };
