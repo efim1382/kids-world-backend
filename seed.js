@@ -8,10 +8,10 @@ const User = mongoose.model('User');
 let seed = new Promise((resolve, reject) => {
 
   let newUser = new User({
-    name: 'Иван',
+    name: 'Роман',
     phone: '+7 (909) 234-33-23',
-    email: 'email@mail.ru',
-    address: 'Красноармейская, 212',
+    email: 'efim1382@mail.ru',
+    address: 'Макеевка, Подъемная, 10',
     photo: '/images/user-image.jpg',
     password: '12345',
     token: uuidv4(),
@@ -19,13 +19,12 @@ let seed = new Promise((resolve, reject) => {
 
   newUser.save().then(user => {
     let obj = Object.assign({
-      title: 'Заголовок',
+      title: 'Детские кроссовки',
       image: '/images/ad-image.jpg',
       date: '25 августа 2017',
       price: 1420,
-      category: 'Одежда',
-      address: 'Красноармейская, 212',
-      description: 'Хорошие',
+      category: 'Детская обувь',
+      description: 'Хорошие кроссовки, новые',
     }, {
       userId: user._id,
     });
