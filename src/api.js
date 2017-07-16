@@ -4,6 +4,7 @@ module.exports = function(app) {
   const User = require('./controllers/UserController');
 
   app.route(`${urlPath}/adverts`).get(Advert.getAdverts);
+  app.route(`${urlPath}/adverts/:id`).get(Advert.getOneAdvert);
   app.route(`${urlPath}/adverts/add`).post(Advert.addAdvert);
 
   app.route(`${urlPath}/auth/login`).post(User.login);

@@ -12,6 +12,14 @@ exports.addAdvert = function(req, res) {
   let newAdvert = new Advert(req.body);
 
   newAdvert.save(function(err, advert) {
-    res.send('Добавлено');
+    res.send(advert);
+  });
+};
+
+exports.getOneAdvert = function(req, res) {
+  Advert.findOne({ '_id': req.params.id }, function(err, advert) {
+    if (!err) {
+      res.json(advert);
+    }
   });
 };
