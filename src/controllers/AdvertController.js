@@ -23,3 +23,11 @@ exports.getOneAdvert = function(req, res) {
     }
   });
 };
+
+exports.getUserAdverts = function(req, res) {
+  Advert.find({ 'userId': req.params.id }, function(err, adverts) {
+    if (!err) {
+      res.json(adverts);
+    }
+  });
+};

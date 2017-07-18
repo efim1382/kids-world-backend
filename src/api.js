@@ -6,6 +6,7 @@ module.exports = function(app) {
 
   app.route(`${urlPath}/adverts`).get(Advert.getAdverts);
   app.route(`${urlPath}/adverts/:id`).get(Advert.getOneAdvert);
+  app.route(`${urlPath}/adverts/user/:id`).get(Advert.getUserAdverts);
   app.route(`${urlPath}/adverts/add`).post(Advert.addAdvert);
 
   app.route(`${urlPath}/auth/login`).post(User.login);
