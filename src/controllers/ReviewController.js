@@ -16,12 +16,9 @@ exports.getReviews = function(req, res) {
 };
 
 exports.getUserReviews = function(req, res) {
-  Review.
-    find({ 'idUserTo': req.params.id }).
-    limit(3).
-    exec(function(err, reviews) {
-      if (!err) {
-        res.json(reviews);
-      }
-    });
+  Review.find({ 'idUserTo': req.params.id }, function(err, reviews) {
+    if (!err) {
+      res.json(reviews);
+    }
+  });
 };
