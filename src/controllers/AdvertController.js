@@ -9,10 +9,19 @@ exports.getAdverts = function(req, res) {
 };
 
 exports.addAdvert = function(req, res) {
-  let newAdvert = new Advert(req.body);
+  let obj = {
+    userId: req.body.userId,
+    title: req.body.title,
+    date: req.body.date,
+    price: req.body.price,
+    category: req.body.category,
+    description: req.body.description,
+    image: `upload/adverts/${req.body.userId}/${req.file.originalname}`,
+  }
+  let newAdvert = new Advert(obj);
 
   newAdvert.save(function(err, advert) {
-    res.send(advert);
+    res.send(obj);
   });
 };
 

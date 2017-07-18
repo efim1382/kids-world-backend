@@ -20,7 +20,7 @@ let seed = new Promise((resolve, reject) => {
   newUser.save().then(user => {
     let obj = Object.assign({
       title: 'Детские кроссовки',
-      image: '/images/ad-image.jpg',
+      image: 'images/ad-image.jpg',
       date: '25 августа 2017',
       price: 1420,
       category: 'Детская обувь',
