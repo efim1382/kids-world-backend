@@ -14,3 +14,14 @@ exports.getReviews = function(req, res) {
     res.send(reviews);
   });
 };
+
+exports.getUserReviews = function(req, res) {
+  Review.
+    find({ 'idUserTo': req.params.id }).
+    limit(3).
+    exec(function(err, reviews) {
+      if (!err) {
+        res.json(reviews);
+      }
+    });
+};

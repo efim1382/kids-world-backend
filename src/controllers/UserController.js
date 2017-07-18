@@ -33,6 +33,7 @@ exports.getUsers = function(req, res) {
 exports.getOneUser = function(req, res) {
   User.findOne({ '_id': req.params.id }, function(err, user) {
     if (!err) {
+      console.log(user);
       res.json(user);
     }
   });

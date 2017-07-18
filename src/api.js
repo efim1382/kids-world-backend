@@ -16,5 +16,6 @@ module.exports = function(app) {
   app.route(`${urlPath}/users/me`).post(User.getCurrentUser);
 
   app.route(`${urlPath}/reviews`).get(Review.getReviews);
+  app.route(`${urlPath}/reviews/user/:id`).get(Review.getUserReviews);
   app.route(`${urlPath}/reviews/add`).post(Review.addReview);
 };
