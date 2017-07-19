@@ -47,3 +47,14 @@ exports.getCurrentUser = function(req, res) {
     }
   });
 };
+
+exports.updatePhoto = function(req, res) {
+  User.findOne({ _id: req.params.id }, function (err, user) {
+    if (!err) {
+      user.photo = `users/${req.params.id}/${req.file.originalname}`;
+      user.save(function(err, user) {
+        res.json(user);
+      });
+    }
+  });
+};

@@ -12,7 +12,7 @@ let seed = new Promise((resolve, reject) => {
     phone: '+7 (909) 234-33-23',
     email: 'efim1382@mail.ru',
     address: 'Макеевка, Подъемная, 10',
-    photo: '/images/user-image.jpg',
+    photo: 'images/user-image.jpg',
     password: '12345',
     token: uuidv4(),
   });

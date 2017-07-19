@@ -30,7 +30,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
-require('./src/api')(app);
+require('./src/api/_all')(app);
 
 app.listen(port, function () {
   console.log('Example app listening on port: ' + port);
