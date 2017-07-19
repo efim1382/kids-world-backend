@@ -16,12 +16,12 @@ exports.addAdvert = function(req, res) {
     price: req.body.price,
     category: req.body.category,
     description: req.body.description,
-    image: `upload/adverts/${req.body.userId}/${req.file.originalname}`,
+    image: `adverts/${req.body.userId}/${req.file.originalname}`,
   }
   let newAdvert = new Advert(obj);
 
   newAdvert.save(function(err, advert) {
-    res.send(obj);
+    res.send(advert);
   });
 };
 
