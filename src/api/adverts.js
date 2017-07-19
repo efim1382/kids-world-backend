@@ -10,9 +10,11 @@ module.exports = function(app) {
       if (!fs.existsSync('upload')) {
         fs.mkdirSync('upload');
       }
+
       if (!fs.existsSync('upload/adverts')) {
         fs.mkdirSync('upload/adverts');
       }
+
       if (!fs.existsSync(`upload/adverts/${req.body.userId}`)) {
         fs.mkdirSync(`upload/adverts/${req.body.userId}`);
       }
@@ -29,4 +31,5 @@ module.exports = function(app) {
   app.route(`${urlPath}/adverts/:id`).get(Advert.getOneAdvert);
   app.route(`${urlPath}/adverts/user/:id`).get(Advert.getUserAdverts);
   app.post(`${urlPath}/adverts/add`, upload.single('image'), Advert.addAdvert);
+  app.post(`${urlPath}/adverts/:id/edit`, upload.single('image'), Advert.editAdvert);
 };

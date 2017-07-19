@@ -25,6 +25,24 @@ exports.addAdvert = function(req, res) {
   });
 };
 
+exports.editAdvert = function(req, res) {
+  Advert.findOne({ _id: req.params.id }, function (err, advert) {
+    if (err) {
+      return;
+    }
+
+    advert.title = req.body.title,
+    advert.price = req.body.price,
+    advert.category = req.body.category,
+    advert.description = req.body.description,
+    advert.image = `adverts/${req.body.userId}/${req.file.originalname}`;
+
+    advert.save(function(err, newAdvert) {
+      res.json(newAdvert);
+    });
+  });
+};
+
 exports.getOneAdvert = function(req, res) {
   Advert.findOne({ '_id': req.params.id }, function(err, advert) {
     if (!err) {
