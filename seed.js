@@ -23,7 +23,7 @@ let seed = new Promise((resolve, reject) => {
       image: 'images/ad-image.jpg',
       date: '25 августа 2017',
       price: 1420,
-      category: 'Детская обувь',
+      category: 'Обувь',
       description: 'Хорошие кроссовки, новые',
     }, {
       userId: user._id,
