@@ -4,8 +4,8 @@
   "description": "",
   "scripts": {
     "start": "supervisor server.js",
-    "seed": "npm run clear && node seed.js",
-    "clear": "node clear.js"
+    "seed": "npm run clean && node seed.js",
+    "clean": "node clean.js"
   },
   "repository": {
     "type": "git",
