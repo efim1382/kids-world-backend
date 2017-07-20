@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const uuidv4 = require('uuid/v4');
 const User = mongoose.model('User');
 const Advert = mongoose.model('Advert');
+const Review = mongoose.model('Review');
 const fs = require('fs');
 
 exports.login = function(req, res) {
@@ -122,6 +123,35 @@ exports.deleteProfile = function(req, res) {
     });
   });
 };
+
+exports.bestSalers = function(req, res) {
+  Review
+    .find({})
+    .distinct('idUserTo')
+    .exec(function(err, users) {
+      getUsersLikeReviews(users).then(reviews => { 
+        res.send(reviews);
+      });
+    });
+};
+
+function getUsersLikeReviews(users) {
+  let array = [];
+  users.forEach(userId => {
+    array.push(
+      getUserLikeReview(userId)
+    );
+  });
+
+  return Promise.all(array);
+}
+
+function getUserLikeReview(userId) {
+  return Review
+    .find({})
+    .where('emotion').equals('like')
+    .where('idUserTo').equals(userId)
+}
 
 function removeAdvert(advert) {
   advert.remove();

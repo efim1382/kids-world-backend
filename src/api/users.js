@@ -34,4 +34,5 @@ module.exports = function(app) {
   app.post(`${urlPath}/users/:id/updateAddress`, User.updateAddress);
   app.post(`${urlPath}/users/:id/updatePassword`, User.updatePassword);
   app.post(`${urlPath}/deleteProfile`, User.deleteProfile);
+  app.get(`${urlPath}/bestSalers`, User.bestSalers);
 };
