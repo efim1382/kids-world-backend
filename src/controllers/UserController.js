@@ -116,6 +116,12 @@ exports.deleteProfile = function(req, res) {
       });
     });
 
+    Review.find({ idUserFrom: user._id }, function(err, reviews) {
+      reviews.forEach(review => {
+        review.remove();
+      });
+    });
+
     user.remove();
 
     res.send({
