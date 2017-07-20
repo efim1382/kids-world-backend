@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const uuidv4 = require('uuid/v4');
 const User = mongoose.model('User');
+const Advert = mongoose.model('Advert');
+const fs = require('fs');
 
 exports.login = function(req, res) {
   let email = req.body.email;
@@ -57,4 +59,79 @@ exports.updatePhoto = function(req, res) {
       });
     }
   });
+};
+
+exports.updateEmail = function(req, res) {
+  User.findOne({ _id: req.params.id }, function (err, user) {
+    if (err) return;
+
+    user.email = req.body.email;
+    user.save(function(err, newUser) {
+      res.json(newUser);
+    });
+  });
+};
+
+exports.updatePhone = function(req, res) {
+  User.findOne({ _id: req.params.id }, function (err, user) {
+    if (err) return;
+
+    user.phone = req.body.phone;
+    user.save(function(err, newUser) {
+      res.json(newUser);
+    });
+  });
+};
+
+exports.updateAddress = function(req, res) {
+  User.findOne({ _id: req.params.id }, function (err, user) {
+    if (err) return;
+
+    user.address = req.body.address;
+    user.save(function(err, newUser) {
+      res.json(newUser);
+    });
+  });
+};
+
+exports.updatePassword = function(req, res) {
+  User.findOne({ _id: req.params.id }, function (err, user) {
+    if (err) return;
+
+    user.password = req.body.password;
+    user.save(function(err, newUser) {
+      res.json(newUser);
+    });
+  });
+};
+
+exports.deleteProfile = function(req, res) {
+  User.findOne({ token: req.body.token }, function (err, user) {
+    if (err) return;
+
+    Advert.find({ userId: user._id }, function(err, adverts) {
+      adverts.forEach(advert => {
+        removeAdvert(advert);
+      });
+    });
+
+    user.remove();
+
+    res.send({
+      status: 200
+    });
+  });
+};
+
+function removeAdvert(advert) {
+  advert.remove();
+
+  if (advert.image === 'images/ad-image.jpg') {
+    return;
+  }
+
+  const filePath = `upload/${advert.image}`;
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+  }
 };

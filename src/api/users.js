@@ -29,4 +29,9 @@ module.exports = function(app) {
   app.route(`${urlPath}/users/:id`).get(User.getOneUser);
   app.route(`${urlPath}/users/me`).post(User.getCurrentUser);
   app.post(`${urlPath}/users/:id/updatePhoto`, upload.single('photo'), User.updatePhoto);
+  app.post(`${urlPath}/users/:id/updateEmail`, User.updateEmail);
+  app.post(`${urlPath}/users/:id/updatePhone`, User.updatePhone);
+  app.post(`${urlPath}/users/:id/updateAddress`, User.updateAddress);
+  app.post(`${urlPath}/users/:id/updatePassword`, User.updatePassword);
+  app.post(`${urlPath}/deleteProfile`, User.deleteProfile);
 };
