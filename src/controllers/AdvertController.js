@@ -63,7 +63,7 @@ exports.editAdvert = function(req, res) {
       advert.price = req.body.price;
       advert.category = req.body.category;
       advert.description = req.body.description;
-      
+
       if (req.file !== undefined) {
         advert.image = `adverts/${req.body.userId}/${req.file.originalname}`;
       }
@@ -71,6 +71,20 @@ exports.editAdvert = function(req, res) {
       advert.save(function(err, newAdvert) {
         res.json(newAdvert);
       });
+    });
+  });
+};
+
+exports.deleteAdvert = function(req, res) {
+  Advert.findOne({ _id: req.params.id }, function (err, advert) {
+    if (err) {
+      return;
+    }
+
+    advert.remove();
+
+    res.send({
+      status: 200
     });
   });
 };

@@ -1,6 +1,6 @@
 module.exports = function(app) {
-  require('./auth')(app);
-  require('./users')(app);
-  require('./adverts')(app);
-  require('./reviews')(app);
+  require('./auth')(app, '/api/v1');
+  require('./users')(app, '/api/v1');
+  require('./adverts')(app, '/api/v1');
+  require('./reviews')(app, '/api/v1');
 };

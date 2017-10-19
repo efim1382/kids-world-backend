@@ -3,8 +3,7 @@ const app = express();
 const port = 8000;
 const bodyParser = require('body-parser');
 const path = require('path');
-const db = require('./src/database')();
-require('./src/models/_all')();
+let db = require('./src/database')();
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -35,3 +34,5 @@ require('./src/api/_all')(app);
 app.listen(port, function () {
   console.log('Example app listening on port: ' + port);
 });
+
+db.close();
