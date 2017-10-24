@@ -2,11 +2,12 @@ let db = require('./src/database')();
 let lastUserId = 0;
 
 db.run(`
-  INSERT INTO user (firstName, lastName, phone, address, photo, hash, token)
-  VALUES (?, ?, ?, ?, ?, ?, ?)
+  INSERT INTO user (firstName, lastName, email, phone, address, photo, hash, token)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 `, [
     'Роман',
     'Ефимов',
+    'efim1382@gmail.com',
     '+79094079312',
     'Ростов-на-Дону, Гвардейский, 6',
     '/public/user-image.png',

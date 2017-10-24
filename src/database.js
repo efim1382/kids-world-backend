@@ -11,6 +11,7 @@ module.exports = function() {
       id integer PRIMARY KEY AUTOINCREMENT,
       firstName varchar(30),
       lastName varchar(50),
+      email varchar(150),
       phone varchar(12),
       address varchar(255),
       photo varchar(255),

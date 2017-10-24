@@ -1,4 +1,5 @@
 const uuidv4 = require('uuid/v4');
+let db = require('../database')();
 
 exports.register = function(req, res) {
   let firstName = req.body.firstName;
@@ -15,7 +16,6 @@ exports.register = function(req, res) {
     !email ||
     !phone ||
     !address ||
-    !email ||
     !password
   ) {
     res.send({
@@ -26,7 +26,25 @@ exports.register = function(req, res) {
     return;
   }
 
-  res.send({
-    status: 200,
+  db.run(`
+    INSERT INTO user (firstName, lastName, email, phone, address, photo, hash, token)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `, [
+      firstName,
+      lastName,
+      email,
+      phone,
+      address,
+      photo,
+      password,
+      ''
+    ], function(error) {
+    if (error) {
+      return console.log(error.message);
+    }
+
+    res.send({
+      status: 200,
+    });
   });
 };
