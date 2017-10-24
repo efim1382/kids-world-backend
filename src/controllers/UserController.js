@@ -1,14 +1,53 @@
 const uuidv4 = require('uuid/v4');
-let db = require('../database')();
+const db = require('../database')();
+const passwordHash = require('password-hash');
+
+exports.login = function(req, res) {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if (!email || !password) {
+    res.send({
+      status: 400,
+      message: 'Не заполнены все поля'
+    });
+
+    return;
+  }
+
+  db.get(`
+    SELECT hash, token
+    FROM user
+    WHERE email = ?
+  `, [email], (error, user) => {
+    if (error) {
+      return console.error(error.message);
+    }
+
+    if (!user || !passwordHash.verify(password, user.hash)) {
+      res.send({
+        status: 500,
+        message: 'Неверные данные',
+      });
+
+      return;
+    }
+
+    res.send({
+      status: 200,
+      token: user.token,
+    });
+  });
+}
 
 exports.register = function(req, res) {
-  let firstName = req.body.firstName;
-  let lastName = req.body.lastName;
-  let email = req.body.email;
-  let phone = req.body.phone;
-  let address = req.body.address;
-  let password = req.body.password;
-  let photo = req.body.photo;
+  const firstName = req.body.firstName;
+  const lastName = req.body.lastName;
+  const email = req.body.email;
+  const phone = req.body.phone;
+  const address = req.body.address;
+  const password = req.body.password;
+  const photo = req.body.photo;
 
   if (
     !firstName ||
@@ -26,25 +65,47 @@ exports.register = function(req, res) {
     return;
   }
 
-  db.run(`
-    INSERT INTO user (firstName, lastName, email, phone, address, photo, hash, token)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `, [
-      firstName,
-      lastName,
-      email,
-      phone,
-      address,
-      photo,
-      password,
-      ''
-    ], function(error) {
+  db.get(`
+    SELECT id
+    FROM user
+    WHERE email = ?
+  `, [email], (error, user) => {
     if (error) {
-      return console.log(error.message);
+      return console.error(error.message);
     }
 
-    res.send({
-      status: 200,
+    if (user) {
+      res.send({
+        status: 500,
+        message: 'Пользователь с таким email уже существует',
+      });
+
+      return;
+    }
+
+    const token = uuidv4();
+
+    db.run(`
+      INSERT INTO user (firstName, lastName, email, phone, address, photo, hash, token)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+        firstName,
+        lastName,
+        email,
+        phone,
+        address,
+        photo,
+        passwordHash.generate(password),
+        token,
+      ], function(error) {
+      if (error) {
+        return console.log(error.message);
+      }
+
+      res.send({
+        status: 200,
+        token,
+      });
     });
   });
 };

@@ -11,7 +11,7 @@ db.run(`
     '+79094079312',
     'Ростов-на-Дону, Гвардейский, 6',
     '/public/user-image.png',
-    'sfdfdsfd',
+    'sha1$c96b7db9$1$6d652247b50eacc0bf5bc20573f941dcb692c218',
     ''
   ], function(err) {
   if (err) {
