@@ -1,5 +1,5 @@
 module.exports = function(app, urlPath) {
-  // const User = require('../controllers/UserController');
+  const User = require('../controllers/UserController');
 
-  // app.route(`${urlPath}/users`).get(User.getUsers);
+  // app.route(`${urlPath}/user/me`).get(User.me);
 };

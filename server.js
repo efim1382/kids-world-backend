@@ -32,7 +32,7 @@ app.use(bodyParser.json());
 require('./src/api/_all')(app);
 
 app.listen(port, function () {
-  console.log('Example app listening on port: ' + port);
+  console.log('Server app listening on port: ' + port);
 });
 
 db.close();
