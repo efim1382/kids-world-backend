@@ -1,5 +1,5 @@
 module.exports = function(app, urlPath) {
-  // const Advert = require('../controllers/AdvertController');
+  const Advert = require('../controllers/AdvertController');
 
-  // app.route(`${urlPath}/adverts`).get(Advert.getAdverts);
+  app.post(`${urlPath}/adverts/add`, Advert.addAdvert);
 };
