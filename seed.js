@@ -10,7 +10,7 @@ db.run(`
     'efim1382@gmail.com',
     '+79094079312',
     'Ростов-на-Дону, Гвардейский, 6',
-    '/public/user-image.png',
+    '/images/user-image.jpg',
     'sha1$c96b7db9$1$6d652247b50eacc0bf5bc20573f941dcb692c218',
     ''
   ], function(err) {
@@ -26,11 +26,11 @@ db.run(`
   `, [
       lastUserId,
       'Кроссовки на мальчика',
-      '2017-10-10',
+      '15 декабря, 2017',
       1400,
       'footwear',
       'Хорошие кроссовки, почти новые',
-      '/public/advert-image.jpg'
+      '/images/ad-image.jpg'
     ], function(err) {
     if (err) {
       return console.log(err.message);
