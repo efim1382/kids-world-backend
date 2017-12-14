@@ -12,11 +12,11 @@ const storage = multer.diskStorage({
       fs.mkdirSync('upload/adverts');
     }
 
-    if (!fs.existsSync(`upload/adverts/${req.body.userId}`)) {
-      fs.mkdirSync(`upload/adverts/${req.body.userId}`);
+    if (!fs.existsSync(`upload/adverts/${req.body.id}`)) {
+      fs.mkdirSync(`upload/adverts/${req.body.id}`);
     }
 
-    cb(null, `upload/adverts/${req.body.userId}`);
+    cb(null, `upload/adverts/${req.body.id}`);
   },
 
   filename: function (req, file, cb) {
@@ -26,19 +26,56 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage }).single('image');
 
+exports.createAdvert = function(req, res) {
+  db.run(`
+    INSERT INTO advert (title)
+    VALUES (' ')
+  `, [], function(error) {
+    if (error) {
+      return console.log(error.message);
+    }
+
+    res.send({
+      status: 200,
+      advertLastid: this.lastID,
+    });
+  });
+};
+
 exports.addAdvert = function(req, res) {
   upload(req, res, function() {
-    let obj = {
+    let data = {
       userId: req.body.userId,
       title: req.body.title,
+      date: req.body.date,
       price: req.body.price,
       category: req.body.category,
       description: req.body.description,
-      image: `adverts/${req.body.userId}/${req.file.originalname}`,
+      image: `adverts/${req.body.id}/${req.file.originalname}`,
     };
 
-    console.log(obj);
-  });
+    db.run(`
+      UPDATE advert
+      SET title = ?, idUser = ?, title = ?, date = ?, price = ?, category = ?, description = ?, mainImage = ?
+      WHERE id = ?
+    `, [
+      data.title,
+      data.userId,
+      data.title,
+      data.date,
+      data.price,
+      data.category,
+      data.description,
+      data.image,
+      req.body.id
+    ], function(error) {
+      if (error) {
+        return console.log(error.message);
+      }
 
-  res.send(200);
+      res.send({
+        status: 200
+      });
+    });
+  });
 }
