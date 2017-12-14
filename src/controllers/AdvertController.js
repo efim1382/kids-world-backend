@@ -26,6 +26,26 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage }).single('image');
 
+exports.getAdverts = function(req, res) {
+  db.all(`
+    SELECT *
+    FROM advert
+    ORDER BY id
+    DESC
+  `, [], (error, adverts) => {
+    if (error) {
+      return console.error(error.message);
+    }
+
+    if (!adverts) {
+      res.status(500);
+      return;
+    }
+
+    res.status(200).send(adverts);
+  });
+};
+
 exports.createAdvert = function(req, res) {
   db.run(`
     INSERT INTO advert (title)
