@@ -74,7 +74,7 @@ exports.register = function(req, res) {
       return console.error(error.message);
     }
 
-    if (user) {
+    if (!user) {
       res.send({
         status: 500,
         message: 'Пользователь с таким email уже существует',
@@ -106,6 +106,43 @@ exports.register = function(req, res) {
         status: 200,
         token,
       });
+    });
+  });
+};
+
+exports.me = function(req, res) {
+  const token = req.body.token;
+
+  if (!token) {
+    res.send({
+      status: 500,
+      message: 'Не пришли данные token',
+    });
+
+    return;
+  }
+
+  db.get(`
+    SELECT *
+    FROM user
+    WHERE token = ?
+  `, [token], (error, user) => {
+    if (error) {
+      return console.error(error.message);
+    }
+
+    if (!user) {
+      res.send({
+        status: 500,
+        message: 'Пользователь не существует',
+      });
+
+      return;
+    }
+
+    res.send({
+      status: 200,
+      user: user,
     });
   });
 };

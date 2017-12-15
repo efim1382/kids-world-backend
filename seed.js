@@ -12,7 +12,7 @@ db.run(`
     'Ростов-на-Дону, Гвардейский, 6',
     '/images/user-image.jpg',
     'sha1$c96b7db9$1$6d652247b50eacc0bf5bc20573f941dcb692c218',
-    ''
+    'fsdgertq34t34fergerg34f4vw'
   ], function(err) {
   if (err) {
     return console.log(err.message);
