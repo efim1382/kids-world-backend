@@ -74,7 +74,7 @@ exports.register = function(req, res) {
       return console.error(error.message);
     }
 
-    if (!user) {
+    if (user) {
       res.send({
         status: 500,
         message: 'Пользователь с таким email уже существует',
