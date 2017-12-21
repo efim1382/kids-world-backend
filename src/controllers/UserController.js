@@ -132,17 +132,47 @@ exports.me = function(req, res) {
     }
 
     if (!user) {
-      res.send({
-        status: 500,
-        message: 'Пользователь не существует',
-      });
-
+      res.status(500).send('Пользователь не существует');
       return;
     }
 
-    res.send({
-      status: 200,
-      user: user,
-    });
+    res.status(200).send(user);
+  });
+};
+
+exports.getUser = function(req, res) {
+  db.get(`
+    SELECT *
+    FROM user
+    WHERE id = ?
+  `, [req.params.id], (error, user) => {
+    if (error) {
+      return console.error(error.message);
+    }
+
+    if (!user) {
+      res.status(500).send('Пользователь не существует');
+      return;
+    }
+
+    res.status(200).send(user);
+  });
+};
+
+exports.getUsers = function(req, res) {
+  db.all(`
+    SELECT *
+    FROM user
+  `, [], (error, users) => {
+    if (error) {
+      return console.error(error.message);
+    }
+
+    if (!users) {
+      res.status(500).send('Пользователей нет');
+      return;
+    }
+
+    res.status(200).send(users);
   });
 };
