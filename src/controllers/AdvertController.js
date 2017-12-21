@@ -77,7 +77,6 @@ exports.getAdvert = function(req, res) {
     WHERE advert.idUser = user.id
     AND advert.id = ?
   `, [id], (error, advert) => {
-    console.log(advert);
     if (error) {
       return console.error(error.message);
     }
