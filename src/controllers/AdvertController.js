@@ -55,6 +55,42 @@ exports.getAdverts = function(req, res) {
   });
 };
 
+exports.getAdvert = function(req, res) {
+  var id = req.params.id;
+
+  db.get(`
+    SELECT advert.id,
+           advert.title,
+           advert.date,
+           advert.price,
+           advert.category,
+           advert.description,
+           advert.mainImage,
+           user.id as userId,
+           user.firstName,
+           user.lastName,
+           user.address,
+           user.email,
+           user.phone,
+           user.photo
+    FROM advert, user
+    WHERE advert.idUser = user.id
+    AND advert.id = ?
+  `, [id], (error, advert) => {
+    console.log(advert);
+    if (error) {
+      return console.error(error.message);
+    }
+
+    if (!advert) {
+      res.status(500);
+      return;
+    }
+
+    res.status(200).send(advert);
+  });
+};
+
 exports.createAdvert = function(req, res) {
   db.run(`
     INSERT INTO advert (title)
