@@ -28,10 +28,19 @@ const upload = multer({ storage: storage }).single('image');
 
 exports.getAdverts = function(req, res) {
   db.all(`
-    SELECT *
-    FROM advert
-    ORDER BY id
-    DESC
+    SELECT advert.id,
+           advert.title,
+           advert.date,
+           advert.price,
+           advert.category,
+           advert.mainImage,
+           user.id as userId,
+           user.firstName,
+           user.lastName,
+           user.address,
+           user.photo
+    FROM advert, user
+    WHERE advert.idUser = user.id
   `, [], (error, adverts) => {
     if (error) {
       return console.error(error.message);
