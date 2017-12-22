@@ -3,6 +3,7 @@ module.exports = function(app, urlPath) {
 
   app.get(`${urlPath}/adverts`, Advert.getAdverts);
   app.get(`${urlPath}/advert/:id`, Advert.getAdvert);
+  app.get(`${urlPath}/adverts/user/:id`, Advert.getUserAdverts);
   app.post(`${urlPath}/adverts/create`, Advert.createAdvert);
   app.post(`${urlPath}/adverts/add`, Advert.addAdvert);
 };

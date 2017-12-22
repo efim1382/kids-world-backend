@@ -143,3 +143,22 @@ exports.addAdvert = function(req, res) {
     });
   });
 }
+
+exports.getUserAdverts = function(req, res) {
+  db.all(`
+    SELECT *
+    FROM advert
+    WHERE idUser = ?
+  `, [req.params.id], function(error, adverts) {
+    if (error) {
+      return console.log(error.message);
+    }
+
+    if (!adverts) {
+      res.status(400).send({ message: 'У пользователя нет объявлений' });
+      return;
+    }
+
+    res.status(200).send(adverts);
+  });
+};
