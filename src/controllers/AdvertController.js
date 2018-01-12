@@ -197,7 +197,11 @@ exports.addAdvert = function(req, res) {
       }
 
       res.send({
-        status: 200
+        status: 200,
+        advert: {
+          ...data,
+          id: req.body.id,
+        }
       });
     });
   });
