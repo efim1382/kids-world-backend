@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const path = require('path');
 let db = require('./src/database')();
 
+process.env.ROOT_PATH = path.resolve(__dirname);
+
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");

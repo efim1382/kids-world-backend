@@ -1,5 +1,6 @@
 const db = require('../database')();
 const fs = require('fs');
+const path = require('path');
 const multer  = require('multer');
 
 const storage = multer.diskStorage({
@@ -25,6 +26,52 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage }).single('image');
+
+const storageEdit = multer.diskStorage({
+  destination: function (req, file, cb) {
+    db.get(`
+      SELECT mainImage
+      FROM advert
+      WHERE id = ?
+    `, [req.body.id], (error, advert) => {
+      if (error) {
+        console.error(error.message);
+      }
+
+      if (!advert) {
+        return;
+      }
+
+      fs.unlink(`${process.env.ROOT_PATH}/upload/${advert.mainImage}`, function(error) {
+        if (error) {
+          console.error(error.message);
+        };
+
+        db.run(`
+          UPDATE advert
+          SET mainImage = ?
+          WHERE id = ?
+        `, [
+          `adverts/${req.body.id}/${file.originalname}`,
+          req.body.id,
+        ], (error, advert) => {
+          if (error) {
+            return console.error(error.message);
+          }
+      
+          cb(null, `upload/adverts/${req.body.id}`);
+        });
+      });
+    });
+
+  },
+
+  filename: function (req, file, cb) {
+    cb(null, file.originalname)
+  }
+});
+
+const uploadEdit = multer({ storage: storageEdit }).single('image');
 
 exports.getAdverts = function(req, res) {
   db.all(`
@@ -120,12 +167,11 @@ exports.addAdvert = function(req, res) {
 
     db.run(`
       UPDATE advert
-      SET title = ?, idUser = ?, title = ?, date = ?, price = ?, category = ?, description = ?, mainImage = ?
+      SET title = ?, idUser = ?, date = ?, price = ?, category = ?, description = ?, mainImage = ?
       WHERE id = ?
     `, [
       data.title,
       data.userId,
-      data.title,
       data.date,
       data.price,
       data.category,
@@ -142,6 +188,38 @@ exports.addAdvert = function(req, res) {
       });
     });
   });
+}
+
+function updateAdvert(req, res) {
+  const id = req.body.id || req.params.id;
+
+  db.run(`
+    UPDATE advert
+    SET title = ?, price = ?, category = ?, description = ?
+    WHERE id = ?
+  `, [
+    req.body.title,
+    req.body.price,
+    req.body.category,
+    req.body.description,
+    id,
+  ], (error) => {
+    if (error) {
+      return console.error(error.message);
+    }
+
+    res.status(200).send({ message: 'ok' });
+  });
+}
+
+exports.editAdvertWithImage = function(req, res) {
+  uploadEdit(req, res, function() {
+    updateAdvert(req, res);
+  });
+};
+
+exports.editAdvert = function(req, res) {
+  updateAdvert(req, res);
 }
 
 exports.getUserAdverts = function(req, res) {
