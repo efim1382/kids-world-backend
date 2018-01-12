@@ -2,6 +2,7 @@ const db = require('../database')();
 const fs = require('fs');
 const path = require('path');
 const multer  = require('multer');
+const rimraf = require('rimraf');
 
 const updateAdvertImage = (req, file, cb) => {
   db.run(`
@@ -250,5 +251,42 @@ exports.getUserAdverts = function(req, res) {
     }
 
     res.status(200).send(adverts);
+  });
+};
+
+exports.deleteAdvert = function(req, res) {
+  const { id } = req.params;
+
+  db.get(`
+    SELECT *
+    FROM advert
+    WHERE id = ?
+  `, [id], (error, advert) => {
+    if (error) {
+      return console.error(error.message);
+    }
+
+    if (!advert) {
+      // 500 ?
+      res.status(500);
+    }
+
+    let imagesPath = `${process.env.ROOT_PATH}/upload/adverts/${id}`;
+
+    if (fs.existsSync(imagesPath)) {
+      rimraf(imagesPath, function() {});
+    }
+
+    db.run(`
+      DELETE
+      FROM advert
+      WHERE id = ?
+    `, [id], (error) => {
+      if (error) {
+        return console.error(error.message);
+      }
+
+      res.status(200).send();
+    });
   });
 };

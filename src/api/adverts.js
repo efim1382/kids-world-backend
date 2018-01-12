@@ -8,4 +8,5 @@ module.exports = function(app, urlPath) {
   app.post(`${urlPath}/adverts/:id/edit/image`, Advert.editAdvertWithImage);
   app.post(`${urlPath}/adverts/create`, Advert.createAdvert);
   app.post(`${urlPath}/adverts/add`, Advert.addAdvert);
+  app.delete(`${urlPath}/adverts/:id/delete`, Advert.deleteAdvert);
 };
