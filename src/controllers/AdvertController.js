@@ -3,20 +3,40 @@ const fs = require('fs');
 const path = require('path');
 const multer  = require('multer');
 
+const updateAdvertImage = (req, file, cb) => {
+  db.run(`
+    UPDATE advert
+    SET mainImage = ?
+    WHERE id = ?
+  `, [
+    `adverts/${req.body.id}/${file.originalname}`,
+    req.body.id,
+  ], (error, advert) => {
+    if (error) {
+      return console.error(error.message);
+    }
+
+    cb(null, `upload/adverts/${req.body.id}`);
+  });
+};
+
+const createAdvertImagesDir = (id) => {
+  if (!fs.existsSync('upload')) {
+    fs.mkdirSync('upload');
+  }
+
+  if (!fs.existsSync('upload/adverts')) {
+    fs.mkdirSync('upload/adverts');
+  }
+
+  if (!fs.existsSync(`upload/adverts/${id}`)) {
+    fs.mkdirSync(`upload/adverts/${id}`);
+  }
+}
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    if (!fs.existsSync('upload')) {
-      fs.mkdirSync('upload');
-    }
-
-    if (!fs.existsSync('upload/adverts')) {
-      fs.mkdirSync('upload/adverts');
-    }
-
-    if (!fs.existsSync(`upload/adverts/${req.body.id}`)) {
-      fs.mkdirSync(`upload/adverts/${req.body.id}`);
-    }
-
+    createAdvertImagesDir(req.body.id);
     cb(null, `upload/adverts/${req.body.id}`);
   },
 
@@ -42,28 +62,20 @@ const storageEdit = multer.diskStorage({
         return;
       }
 
+      if (advert.mainImage === '/images/ad-image.jpg') {
+        createAdvertImagesDir(req.body.id);
+        updateAdvertImage(req, file, cb);
+        return;
+      }
+
       fs.unlink(`${process.env.ROOT_PATH}/upload/${advert.mainImage}`, function(error) {
         if (error) {
           console.error(error.message);
         };
 
-        db.run(`
-          UPDATE advert
-          SET mainImage = ?
-          WHERE id = ?
-        `, [
-          `adverts/${req.body.id}/${file.originalname}`,
-          req.body.id,
-        ], (error, advert) => {
-          if (error) {
-            return console.error(error.message);
-          }
-      
-          cb(null, `upload/adverts/${req.body.id}`);
-        });
+        updateAdvertImage(req, file, cb);
       });
     });
-
   },
 
   filename: function (req, file, cb) {
