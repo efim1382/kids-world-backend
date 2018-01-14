@@ -16,7 +16,7 @@ exports.login = function(req, res) {
   }
 
   db.get(`
-    SELECT hash, token
+    SELECT id, hash, token
     FROM user
     WHERE email = ?
   `, [email], (error, user) => {
@@ -35,7 +35,7 @@ exports.login = function(req, res) {
 
     res.send({
       status: 200,
-      token: user.token,
+      user: user,
     });
   });
 }
@@ -104,7 +104,10 @@ exports.register = function(req, res) {
 
       res.send({
         status: 200,
-        token,
+        user: {
+          id: this.lastID,
+          token,
+        },
       });
     });
   });
