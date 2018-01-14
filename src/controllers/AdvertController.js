@@ -314,6 +314,26 @@ exports.isAdvertFavorite = function(req, res) {
   });
 };
 
+exports.getFavoritesAdverts = function(req, res) {
+  const { userId } = req.params;
+
+  db.all(`
+    SELECT advert.id,
+           advert.title,
+           advert.mainImage
+    FROM advert, favorites
+    WHERE advert.id = favorites.idAdvert
+    AND favorites.idUser = ?
+  `, [userId], function(error, adverts) {
+    if (error) {
+      return console.error(error.message);
+    }
+
+    res.status(200).send(adverts);
+  });
+
+};
+
 exports.deleteAdvert = function(req, res) {
   const { id } = req.params;
 
