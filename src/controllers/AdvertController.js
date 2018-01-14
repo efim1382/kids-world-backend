@@ -258,6 +258,62 @@ exports.getUserAdverts = function(req, res) {
   });
 };
 
+exports.setFavoriteAdvert = function(req, res) {
+  const userId = req.body.userId;
+  const advertId = req.params.id;
+
+  db.get(`
+    SELECT id
+    FROM favorites
+    WHERE idUser = ?
+    AND idAdvert = ?
+    LIMIT 1
+  `, [userId, advertId], function(error, favorite) {
+    if (!favorite) {
+      db.run(`
+        INSERT INTO favorites (idUser, idAdvert)
+        VALUES (?, ?)
+      `, [userId, advertId], function(error) {
+        if (error) {
+          console.log(error.message);
+        }
+      });
+    } else {
+      db.run(`
+        DELETE FROM favorites
+        WHERE idUser = ?
+        AND idAdvert = ?
+      `, [userId, advertId], function(error) {
+        if (error) {
+          console.error(error.message);
+        }
+      });
+    }
+
+    res.status(200).send({ message: 'ok' });
+  });
+
+};
+
+exports.isAdvertFavorite = function(req, res) {
+  const { id, userId } = req.params;
+  
+  db.get(`
+    SELECT *
+    FROM favorites
+    WHERE idUser = ?
+    AND idAdvert = ?
+    LIMIT 1
+  `, [userId, id], function(error, favorite) {
+    if (!favorite) {
+      res.send(false);
+      return;
+    }
+
+    res.send(true);
+  });
+};
+
 exports.deleteAdvert = function(req, res) {
   const { id } = req.params;
 

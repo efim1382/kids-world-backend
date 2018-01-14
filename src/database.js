@@ -46,6 +46,14 @@ module.exports = function() {
       FOREIGN KEY (idAuthor) REFERENCES user(id)
       ON DELETE CASCADE
     )`);
+    db.run(`CREATE TABLE IF NOT EXISTS favorites (
+      id integer PRIMARY KEY AUTOINCREMENT,
+      idUser integer,
+      idAdvert integer,
+      FOREIGN KEY (idUser) REFERENCES user(id)
+      FOREIGN KEY (idAdvert) REFERENCES advert(id)
+      ON DELETE CASCADE
+    )`);
   });
 
   return db;
