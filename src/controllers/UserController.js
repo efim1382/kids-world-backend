@@ -184,6 +184,30 @@ exports.getUsers = function(req, res) {
   });
 };
 
+exports.getbestSalers = function(req, res) {
+  db.all(`
+    SELECT DISTINCT count(review.id) as likes,
+                    user.id,
+                    user.photo,
+                    user.firstName,
+                    user.lastName
+    FROM user, review
+    WHERE user.id = review.idRecipient
+    AND review.emotion = 'like'
+    GROUP BY user.id
+  `, [], function(error, users) {
+    if (error) {
+      return console.error(error.message);
+    }
+
+    if (!users) {
+      return;
+    }
+
+    res.status(200).send(users);
+  });
+};
+
 exports.changeAddress = function(req, res) {
   db.run(`
     UPDATE user
