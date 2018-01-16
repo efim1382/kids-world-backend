@@ -327,3 +327,49 @@ exports.changePhoto = function(req, res) {
     res.status(200).send();
   });
 };
+
+const deleteUserAdverts = (adverts) => {
+  adverts.forEach(advert => {
+    let imagesPath = `${process.env.ROOT_PATH}/upload/adverts/${advert.id}`;
+
+    if (fs.existsSync(imagesPath)) {
+      rimraf(imagesPath, function() {});
+    }
+  });
+};
+
+exports.deleteProfile = function(req, res) {
+  const { id } = req.body;
+
+  db.all(`
+    SELECT *
+    FROM advert
+    WHERE idUser = ?
+  `, [id], function(error, adverts) {
+    if (error) {
+      return console.error(error.message);
+    }
+
+    if (adverts) {
+      deleteUserAdverts(adverts);
+    }
+
+    let photoPath = `${process.env.ROOT_PATH}/upload/users/${id}`;
+
+    if (fs.existsSync(photoPath)) {
+      rimraf(photoPath, function() {});
+    }
+
+    db.run(`
+      DELETE
+      FROM user
+      WHERE id = ?
+    `, [id], function(error) {
+      if (error) {
+        return console.error(error.message);
+      }
+
+      res.status(200).send();
+    });
+  });
+};

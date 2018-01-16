@@ -7,6 +7,7 @@ module.exports = function() {
   });
 
   db.serialize(function() {
+    db.run(`PRAGMA foreign_keys = ON`);
     db.run(`CREATE TABLE IF NOT EXISTS user (
       id integer PRIMARY KEY AUTOINCREMENT,
       firstName varchar(30),
@@ -27,15 +28,13 @@ module.exports = function() {
       category varchar(50),
       description text(2000),
       mainImage varchar(255),
-      FOREIGN KEY (idUser) REFERENCES user(id)
-      ON DELETE CASCADE
+      FOREIGN KEY (idUser) REFERENCES user(id) ON DELETE CASCADE
     )`);
     db.run(`CREATE TABLE IF NOT EXISTS advertImages (
       id integer PRIMARY KEY AUTOINCREMENT,
       idAdvert integer,
       image varchar(255),
-      FOREIGN KEY (idAdvert) REFERENCES advert(id)
-      ON DELETE CASCADE
+      FOREIGN KEY (idAdvert) REFERENCES advert(id) ON DELETE CASCADE
     )`);
     db.run(`CREATE TABLE IF NOT EXISTS review (
       id integer PRIMARY KEY AUTOINCREMENT,
@@ -43,16 +42,14 @@ module.exports = function() {
       idAuthor integer,
       idRecipient integer,
       emotion varchar(7),
-      FOREIGN KEY (idAuthor) REFERENCES user(id)
-      ON DELETE CASCADE
+      FOREIGN KEY (idAuthor) REFERENCES user(id) ON DELETE CASCADE
     )`);
     db.run(`CREATE TABLE IF NOT EXISTS favorites (
       id integer PRIMARY KEY AUTOINCREMENT,
       idUser integer,
       idAdvert integer,
-      FOREIGN KEY (idUser) REFERENCES user(id)
-      FOREIGN KEY (idAdvert) REFERENCES advert(id)
-      ON DELETE CASCADE
+      FOREIGN KEY (idUser) REFERENCES user(id) ON DELETE CASCADE,
+      FOREIGN KEY (idAdvert) REFERENCES advert(id) ON DELETE CASCADE
     )`);
   });
 

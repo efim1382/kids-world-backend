@@ -9,4 +9,5 @@ module.exports = function(app, urlPath) {
   app.post(`${urlPath}/user/email`, User.changeEmail);
   app.post(`${urlPath}/user/password`, User.changePassword);
   app.post(`${urlPath}/user/photo`, User.changePhoto);
+  app.delete(`${urlPath}/user/delete`, User.deleteProfile);
 };
