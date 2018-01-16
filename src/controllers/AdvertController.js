@@ -101,6 +101,8 @@ exports.getAdverts = function(req, res) {
            user.photo
     FROM advert, user
     WHERE advert.idUser = user.id
+    ORDER BY advert.id
+    DESC
   `, [], (error, adverts) => {
     if (error) {
       return console.error(error.message);
