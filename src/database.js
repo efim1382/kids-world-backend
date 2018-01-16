@@ -1,6 +1,6 @@
 module.exports = function() {
   const sqlite3 = require('sqlite3').verbose();
-  let db = new sqlite3.Database('./newdb.db', (error) => {
+  let db = new sqlite3.Database('./kidsworld.db', (error) => {
     if (error) {
       console.error(error.message);
     }
