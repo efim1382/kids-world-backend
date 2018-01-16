@@ -1,3 +1,4 @@
 *.log*
 upload
 node_modules
+*.db
