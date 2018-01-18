@@ -1,13 +1,16 @@
 let db = require('./src/database')();
+const { logger } = require('./src/functions');
 
-db.run('DELETE FROM advert', function(error) {
+db.run('DELETE FROM user', function(error) {
   if (error) {
-    return console.error(error.message);
+    logger(error.message);
+    return;
   }
 
-  db.run('DELETE FROM user', function(error) {
+  db.run('DELETE FROM favorites', function(error) {
     if (error) {
-      return console.error(error.message);
+      logger(error.message);
+      return;
     }
   });
 });

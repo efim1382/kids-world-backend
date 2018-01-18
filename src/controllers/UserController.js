@@ -1,5 +1,6 @@
 const uuidv4 = require('uuid/v4');
 const db = require('../database')();
+const { logger } = require('../functions');
 const passwordHash = require('password-hash');
 const fs = require('fs');
 const path = require('path');
@@ -7,13 +8,12 @@ const multer  = require('multer');
 const rimraf = require('rimraf');
 
 exports.login = function(req, res) {
-  const email = req.body.email;
-  const password = req.body.password;
+  const { email, password } = req.body;
 
   if (!email || !password) {
     res.send({
       status: 400,
-      message: 'Не заполнены все поля'
+      message: 'Не заполнены все поля',
     });
 
     return;
@@ -23,15 +23,16 @@ exports.login = function(req, res) {
     SELECT id, hash, token
     FROM user
     WHERE email = ?
-  `, [email], (error, user) => {
+  `, [email], function(error, user) {
     if (error) {
-      return console.error(error.message);
+      logger(error.message);
+      return;
     }
 
     if (!user || !passwordHash.verify(password, user.hash)) {
       res.send({
         status: 500,
-        message: 'Неверные данные',
+        message: 'Почта или пароль неверны',
       });
 
       return;
@@ -39,19 +40,18 @@ exports.login = function(req, res) {
 
     res.send({
       status: 200,
-      user: user,
+
+      user: {
+        id: user.id,
+        token: user.token,
+      },
     });
   });
 }
 
 exports.register = function(req, res) {
-  const firstName = req.body.firstName;
-  const lastName = req.body.lastName;
-  const email = req.body.email;
-  const phone = req.body.phone;
-  const address = req.body.address;
-  const password = req.body.password;
-  const photo = req.body.photo;
+  const { firstName, lastName, email, phone, address, password, confirmPassword } = req.body;
+  const photo = '/images/user-image.jpg';
 
   if (
     !firstName ||
@@ -59,7 +59,8 @@ exports.register = function(req, res) {
     !email ||
     !phone ||
     !address ||
-    !password
+    !password ||
+    !confirmPassword
   ) {
     res.send({
       status: 400,
@@ -69,13 +70,23 @@ exports.register = function(req, res) {
     return;
   }
 
+  if (password !== confirmPassword) {
+    res.send({
+      status: 400,
+      message: 'Пароли не совпадают',
+    });
+
+    return;
+  }
+
   db.get(`
     SELECT id
     FROM user
     WHERE email = ?
-  `, [email], (error, user) => {
+  `, [email], function(error, user) {
     if (error) {
-      return console.error(error.message);
+      logger(error.message);
+      return;
     }
 
     if (user) {
@@ -93,21 +104,23 @@ exports.register = function(req, res) {
       INSERT INTO user (firstName, lastName, email, phone, address, photo, hash, token)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `, [
-        firstName,
-        lastName,
-        email,
-        phone,
-        address,
-        photo,
-        passwordHash.generate(password),
-        token,
-      ], function(error) {
+      firstName,
+      lastName,
+      email,
+      phone,
+      address,
+      photo,
+      passwordHash.generate(password),
+      token,
+    ], function(error) {
       if (error) {
-        return console.error(error.message);
+        logger(error.message);
+        return;
       }
 
       res.send({
         status: 200,
+
         user: {
           id: this.lastID,
           token,
