@@ -1,0 +1,7 @@
+{
+  "name": "Kids World",
+  "version": "0.0.0",
+  "description": "Доска объявлений детских товаров",
+  "title": "Документация API Kids World",
+  "url": "localhost:8000/api/v1"
+}

@@ -9,7 +9,8 @@
   "scripts": {
     "start": "supervisor server.js",
     "clean": "node clean.js",
-    "seed": "node seed.js"
+    "seed": "node seed.js",
+    "docs": "apidoc -i ./src/controllers"
   },
   "author": "efim1382@gmail.com",
   "license": "ISC",

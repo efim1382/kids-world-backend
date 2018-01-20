@@ -7,6 +7,22 @@ const path = require('path');
 const multer  = require('multer');
 const rimraf = require('rimraf');
 
+/**
+ * @api {post} /auth/login Авторизация
+ * @apiGroup User
+ *
+ * @apiParam {String} email Эл. почта пользователя.
+ * @apiParam {String} password Пароль.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200,
+ *       "user": {
+ *         "id": 12,
+ *         "token": "dfs34rfeveg25grfdv"
+ *       }
+ *     }
+ */
 exports.login = function(req, res) {
   const { email, password } = req.body;
 
@@ -49,6 +65,27 @@ exports.login = function(req, res) {
   });
 }
 
+/**
+ * @api {post} /auth/register Регистрация
+ * @apiGroup User
+ *
+ * @apiParam {String} firstName Имя.
+ * @apiParam {String} lastName Фамилия.
+ * @apiParam {String} email Почта.
+ * @apiParam {String} phone Телефон.
+ * @apiParam {String} address Адрес.
+ * @apiParam {String} password Пароль.
+ * @apiParam {String} confirmPassword Повторный пароль.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200,
+ *       "user": {
+ *         "id": 12,
+ *         "token": "dfs34rfeveg25grfdv"
+ *       }
+ *     }
+ */
 exports.register = function(req, res) {
   const { firstName, lastName, email, phone, address, password, confirmPassword } = req.body;
   const photo = '/images/user-image.jpg';
