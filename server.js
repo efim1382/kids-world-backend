@@ -3,6 +3,7 @@ const app = express();
 const port = 8000;
 const bodyParser = require('body-parser');
 const path = require('path');
+const fileUpload = require('express-fileupload');
 let db = require('./src/database')();
 
 process.env.ROOT_PATH = path.resolve(__dirname);
@@ -31,6 +32,7 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 app.use(bodyParser.json());
+app.use(fileUpload());
 
 require('./src/api/_all')(app);
 

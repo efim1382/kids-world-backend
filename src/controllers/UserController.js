@@ -9,8 +9,6 @@ const {
 
 const passwordHash = require('password-hash');
 const fs = require('fs');
-const path = require('path');
-const multer  = require('multer');
 const rimraf = require('rimraf');
 
 /**
@@ -660,26 +658,63 @@ exports.changePassword = function(req, res) {
   });
 };
 
+/**
+ * @api {post} /user/photo changePhoto
+ * @apiGroup User
+ *
+ * @apiDescription Изменить фотографию пользователя
+ *
+ * @apiParam {Number} id Id пользователя.
+ * @apiParam {Object} photo Фотография.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200
+ *     }
+ */
+exports.changePhoto = function(req, res) {
+  const { id } = req.body;
+  const { photo } = req.files;
 
-/* Переделать изменение фото и multer */
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const userId = req.body.id;
-    createUserPhotoDir(userId);
+  if (!photo || !id) {
+    logger('Нет photo или id');
 
-    db.get(`
-      SELECT photo
-      FROM user
-      WHERE id = ?
-    `, [userId], function(error, user) {
+    res.send({
+      status: 500,
+      message: 'Ошибка при изменении фотографии',
+    });
+
+    return;
+  }
+
+  createUserPhotoDir(id);
+
+  db.get(`
+    SELECT photo
+    FROM user
+    WHERE id = ?
+  `, [id], function(error, user) {
+    if (error) {
+      logger(error.message);
+      return;
+    }
+
+    let imagesPath = `${process.env.ROOT_PATH}/upload/${user.photo}`;
+
+    if (user.photo !== '/images/user-image.jpg' && fs.existsSync(imagesPath)) {
+      fs.unlinkSync(imagesPath);
+    }
+
+    photo.mv(`${process.env.ROOT_PATH}/upload/users/${id}/${photo.name}`, function(error) {
       if (error) {
-        return console.error(error.message);
-      }
+        logger(error);
 
-      let imagesPath = `${process.env.ROOT_PATH}/upload/${user.photo}`;
+        res.send({
+          status: 500,
+          message: 'Ошибка при изменении фотографии',
+        });
 
-      if (user.photo !== '/images/user-image.jpg' && fs.existsSync(imagesPath)) {
-        fs.unlinkSync(imagesPath);
+        return;
       }
 
       db.run(`
@@ -687,28 +722,23 @@ const storage = multer.diskStorage({
         SET photo = ?
         WHERE id = ?
       `, [
-        `users/${userId}/${file.originalname}`,
-        userId,
+        `users/${id}/${photo.name}`,
+        id,
       ], (error) => {
         if (error) {
-          return console.error(error.message);
+          logger(error.message);
+
+          res.send({
+            status: 500,
+            message: 'Ошибка при изменении фотографии',
+          });
+
+          return;
         }
 
-        cb(null, `upload/users/${userId}`);
+        res.send({ status: 200 });
       });
     });
-  },
-
-  filename: function (req, file, cb) {
-    cb(null, file.originalname)
-  }
-});
-
-const upload = multer({ storage: storage }).single('photo');
-
-exports.changePhoto = function(req, res) {
-  upload(req, res, function() {
-    res.status(200).send();
   });
 };
 
