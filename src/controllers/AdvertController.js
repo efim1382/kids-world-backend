@@ -1,5 +1,6 @@
 const db = require('../database')();
 const fs = require('fs');
+const { logger } = require('../functions');
 const path = require('path');
 const multer  = require('multer');
 const rimraf = require('rimraf');
@@ -86,6 +87,30 @@ const storageEdit = multer.diskStorage({
 
 const uploadEdit = multer({ storage: storageEdit }).single('image');
 
+/**
+ * @api {get} /adverts getAdverts
+ * @apiGroup Adverts
+ *
+ * @apiDescription Получить все объявления
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200
+ *       "adverts": [{
+ *         "id": 1
+ *         "title": "Детские тапки"
+ *         "date": "15 декабря, 2017"
+ *         "price": 1250
+ *         "category": "footwear"
+ *         "mainImage": "/images/ad-image.jpg"
+ *         "userId": 3
+ *         "firstName": "Петр"
+ *         "lastName": "Петров"
+ *         "address": "Ростов-на-Дону, Красноармейская, 12"
+ *         "photo": "/images/user-image.jpg"
+ *       }]
+ *     }
+ */
 exports.getAdverts = function(req, res) {
   db.all(`
     SELECT advert.id,
@@ -105,20 +130,66 @@ exports.getAdverts = function(req, res) {
     DESC
   `, [], (error, adverts) => {
     if (error) {
-      return console.error(error.message);
-    }
-
-    if (!adverts) {
-      res.status(500);
+      logger(error.message);
       return;
     }
 
-    res.status(200).send(adverts);
+    if (!adverts) {
+      logger('Нет объявлений');
+
+      res.send({
+        status: 200,
+        adverts: [],
+      });
+
+      return;
+    }
+
+    res.send({
+      status: 200,
+      adverts,
+    });
   });
 };
 
+/**
+ * @api {get} /adverts/:id getAdvert
+ * @apiGroup Adverts
+ *
+ * @apiDescription Получить объявление по id
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200
+ *       "advert": {
+ *         "id": 1
+ *         "title": "Детские тапки"
+ *         "date": "15 декабря, 2017"
+ *         "price": 1250
+ *         "category": "footwear"
+ *         "mainImage": "/images/ad-image.jpg"
+ *         "userId": 3
+ *         "firstName": "Петр"
+ *         "lastName": "Петров"
+ *         "address": "Ростов-на-Дону, Красноармейская, 12"
+ *         "email": "petr@gmail.com"
+ *         "photo": "/images/user-image.jpg"
+ *       }
+ *     }
+ */
 exports.getAdvert = function(req, res) {
-  var id = req.params.id;
+  const { id } = req.params;
+
+  if (!id) {
+    logger('Не передан id');
+
+    res.send({
+      status: 500,
+      message: 'Ошибка при получении объявления',
+    });
+
+    return;
+  }
 
   db.get(`
     SELECT advert.id,
@@ -140,15 +211,31 @@ exports.getAdvert = function(req, res) {
     AND advert.id = ?
   `, [id], (error, advert) => {
     if (error) {
-      return console.error(error.message);
-    }
+      logger(error.message);
 
-    if (!advert) {
-      res.status(500);
+      res.send({
+        status: 500,
+        message: 'Ошибка при получении объявления',
+      });
+
       return;
     }
 
-    res.status(200).send(advert);
+    if (!advert) {
+      logger('Ошибка при получении объявления');
+
+      res.send({
+        status: 500,
+        message: 'Ошибка при получении объявления',
+      });
+
+      return;
+    }
+
+    res.send({
+      status: 200,
+      advert,
+    });
   });
 };
 

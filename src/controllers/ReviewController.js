@@ -52,7 +52,7 @@ exports.addReview = function(req, res) {
 };
 
 /**
- * @api {post} /reviews/user/:id getUserReviews
+ * @api {get} /reviews/user/:id getUserReviews
  * @apiGroup Review
  *
  * @apiDescription Получить отзывы пользователя
