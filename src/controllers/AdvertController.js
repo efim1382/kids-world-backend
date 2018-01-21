@@ -1,91 +1,8 @@
 const db = require('../database')();
 const fs = require('fs');
-const { logger } = require('../functions');
+const { logger, createAdvertImagesDir } = require('../functions');
 const path = require('path');
-const multer  = require('multer');
 const rimraf = require('rimraf');
-
-const updateAdvertImage = (req, file, cb) => {
-  db.run(`
-    UPDATE advert
-    SET mainImage = ?
-    WHERE id = ?
-  `, [
-    `adverts/${req.body.id}/${file.originalname}`,
-    req.body.id,
-  ], (error, advert) => {
-    if (error) {
-      return console.error(error.message);
-    }
-
-    cb(null, `upload/adverts/${req.body.id}`);
-  });
-};
-
-const createAdvertImagesDir = (id) => {
-  if (!fs.existsSync('upload')) {
-    fs.mkdirSync('upload');
-  }
-
-  if (!fs.existsSync('upload/adverts')) {
-    fs.mkdirSync('upload/adverts');
-  }
-
-  if (!fs.existsSync(`upload/adverts/${id}`)) {
-    fs.mkdirSync(`upload/adverts/${id}`);
-  }
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    createAdvertImagesDir(req.body.id);
-    cb(null, `upload/adverts/${req.body.id}`);
-  },
-
-  filename: function (req, file, cb) {
-    cb(null, file.originalname)
-  }
-});
-
-const upload = multer({ storage: storage }).single('image');
-
-const storageEdit = multer.diskStorage({
-  destination: function (req, file, cb) {
-    db.get(`
-      SELECT mainImage
-      FROM advert
-      WHERE id = ?
-    `, [req.body.id], (error, advert) => {
-      if (error) {
-        console.error(error.message);
-      }
-
-      if (!advert) {
-        return;
-      }
-
-      if (advert.mainImage === '/images/ad-image.jpg') {
-        createAdvertImagesDir(req.body.id);
-        updateAdvertImage(req, file, cb);
-        return;
-      }
-
-      fs.unlink(`${process.env.ROOT_PATH}/upload/${advert.mainImage}`, function(error) {
-        if (error) {
-          console.error(error.message);
-        };
-
-        updateAdvertImage(req, file, cb);
-      });
-    });
-  },
-
-  filename: function (req, file, cb) {
-    cb(null, file.originalname)
-  }
-});
-
-const uploadEdit = multer({ storage: storageEdit }).single('image');
 
 /**
  * @api {get} /adverts getAdverts
@@ -95,7 +12,7 @@ const uploadEdit = multer({ storage: storageEdit }).single('image');
  *
  * @apiSuccessExample Success-Response:
  *     {
- *       "status": 200
+ *       "status": 200,
  *       "adverts": [{
  *         "id": 1
  *         "title": "Детские тапки"
@@ -160,7 +77,7 @@ exports.getAdverts = function(req, res) {
  *
  * @apiSuccessExample Success-Response:
  *     {
- *       "status": 200
+ *       "status": 200,
  *       "advert": {
  *         "id": 1
  *         "title": "Детские тапки"
@@ -239,94 +156,222 @@ exports.getAdvert = function(req, res) {
   });
 };
 
-exports.createAdvert = function(req, res) {
-  db.run(`
-    INSERT INTO advert (title)
-    VALUES (' ')
-  `, [], function(error) {
-    if (error) {
-      return console.log(error.message);
-    }
+/**
+ * @api {post} /adverts/add addAdvert
+ * @apiGroup Adverts
+ *
+ * @apiDescription Добавление объявления
+ *
+ * @apiParam {Number} userId Id автора объявления.
+ * @apiParam {String} title Заголовок.
+ * @apiParam {Date} date Дата создания объявления.
+ * @apiParam {Number} price Цена.
+ * @apiParam {String} category Категория.
+ * @apiParam {String} description Описание.
+ * @apiParam {Obect} image Фотография объявления.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200,
+ *       "advert": {
+ *         "id": 1
+ *       }
+ *     }
+ */
+exports.addAdvert = function(req, res) {
+  const {
+    userId, title, date, price, category, description
+  } = req.body;
+
+  const { image } = req.files;
+
+  if (
+    !userId ||
+    !title ||
+    !date ||
+    !price ||
+    !category ||
+    !description ||
+    !image
+  ) {
+    logger('Заполнены не все данные');
 
     res.send({
-      status: 200,
-      advertLastid: this.lastID,
+      status: 500,
+      message: 'Заполните все данные'
     });
-  });
-};
 
-exports.addAdvert = function(req, res) {
-  upload(req, res, function() {
-    let data = {
-      userId: req.body.userId,
-      title: req.body.title,
-      date: req.body.date,
-      price: req.body.price,
-      category: req.body.category,
-      description: req.body.description,
-      image: `adverts/${req.body.id}/${req.file.originalname}`,
-    };
+    return;
+  }
+
+  db.run(`
+    INSERT INTO advert (
+      title,
+      date,
+      price,
+      category,
+      description,
+      idUser
+    )
+    VALUES (?, ?, ?, ?, ?, ?)
+  `, [
+    title,
+    date,
+    price,
+    category,
+    description,
+    userId
+  ], function(error) {
+    if (error) {
+      logger(error.message);
+
+      res.send({
+        status: 500,
+        message: 'Ошибка при добавлении объявления',
+      });
+
+      return;
+    }
+
+    const advertId = this.lastID;
 
     db.run(`
       UPDATE advert
-      SET title = ?, idUser = ?, date = ?, price = ?, category = ?, description = ?, mainImage = ?
+      SET mainImage = ?
       WHERE id = ?
-    `, [
-      data.title,
-      data.userId,
-      data.date,
-      data.price,
-      data.category,
-      data.description,
-      data.image,
-      req.body.id
-    ], function(error) {
+    `, [`adverts/${advertId}/${image.name}`, advertId], function(error) {
       if (error) {
-        return console.log(error.message);
+        logger(error.message);
+
+        res.send({
+          status: 500,
+          message: 'Ошибка при добавлении объявления',
+        });
+
+        return;
+      }
+    });
+
+    createAdvertImagesDir(advertId);
+
+    image.mv(`${process.env.ROOT_PATH}/upload/adverts/${advertId}/${image.name}`, function(error) {
+      if (error) {
+        logger(error);
       }
 
       res.send({
         status: 200,
+
         advert: {
-          ...data,
-          id: req.body.id,
-        }
+          id: advertId,
+        },
       });
     });
   });
 }
 
-function updateAdvert(req, res) {
-  const id = req.body.id || req.params.id;
+/**
+ * @api {post} /adverts/:id/edit editAdvert
+ * @apiGroup Adverts
+ *
+ * @apiDescription Редактирование объявления
+ *
+ * @apiParam {Number} id Id объявления.
+ * @apiParam {String} title Заголовок.
+ * @apiParam {Number} price Цена.
+ * @apiParam {String} category Категория.
+ * @apiParam {String} description Описание.
+ * @apiParam {Obect} image Фотография объявления.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200
+ *     }
+ */
+exports.editAdvert = function(req, res) {
+  const { id } = req.params;
+  const { title, price, category, description } = req.body;
 
-  db.run(`
-    UPDATE advert
-    SET title = ?, price = ?, category = ?, description = ?
+  const { image } = req.files || {};
+
+  if (
+    !id ||
+    !title ||
+    !price ||
+    !category ||
+    !description
+  ) {
+    logger('Заполните все поля');
+
+    res.send({
+      status: 500,
+      message: 'Заполните все поля',
+    });
+
+    return;
+  }
+
+  db.get(`
+    SELECT mainImage
+    FROM advert
     WHERE id = ?
-  `, [
-    req.body.title,
-    req.body.price,
-    req.body.category,
-    req.body.description,
-    id,
-  ], (error) => {
+  `, [id], function(error, advert) {
     if (error) {
-      return console.error(error.message);
+      logger(error.message);
+
+      res.send({
+        status: 500,
+        message: 'Ошибка при редактировании объявления',
+      });
+
+      return;
     }
 
-    res.status(200).send({ message: 'ok' });
-  });
-}
+    if (image) {
+      fs.unlink(`${process.env.ROOT_PATH}/upload/${advert.mainImage}`, function(error) {
+        if (error) {
+          logger(error.message);
+        };
+      });
 
-exports.editAdvertWithImage = function(req, res) {
-  uploadEdit(req, res, function() {
-    updateAdvert(req, res);
+      image.mv(`${process.env.ROOT_PATH}/upload/adverts/${id}/${image.name}`, function(error) {
+        if (error) {
+          logger(error);
+          return;
+        }
+
+        db.run(`
+          UPDATE advert
+          SET mainImage = ?
+          WHERE id = ?
+        `, [`adverts/${id}/${image.name}`, id], function(error) {
+          if (error) {
+            logger(error.message);
+          }
+        });
+      });
+    }
+
+    db.run(`
+      UPDATE advert
+      SET title = ?, price = ?, category = ?, description = ?
+      WHERE id = ?
+    `, [title, price, category, description, id], function(error) {
+      if (error) {
+        logger(error.message);
+
+        res.send({
+          status: 500,
+          message: 'Ошибка при редактировании объявления',
+        });
+
+        return;
+      }
+
+      res.send({ status: 200 });
+    });
   });
 };
-
-exports.editAdvert = function(req, res) {
-  updateAdvert(req, res);
-}
 
 exports.getUserAdverts = function(req, res) {
   db.all(`

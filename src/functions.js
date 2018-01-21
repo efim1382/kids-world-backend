@@ -17,6 +17,20 @@ exports.createUserPhotoDir = (id) => {
   if (!fs.existsSync(`upload/users/${id}`)) {
     fs.mkdirSync(`upload/users/${id}`);
   }
+};
+
+exports.createAdvertImagesDir = (id) => {
+  if (!fs.existsSync('upload')) {
+    fs.mkdirSync('upload');
+  }
+
+  if (!fs.existsSync('upload/adverts')) {
+    fs.mkdirSync('upload/adverts');
+  }
+
+  if (!fs.existsSync(`upload/adverts/${id}`)) {
+    fs.mkdirSync(`upload/adverts/${id}`);
+  }
 }
 
 exports.deleteUserAdverts = (adverts) => {
