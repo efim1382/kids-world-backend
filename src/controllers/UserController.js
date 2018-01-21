@@ -235,22 +235,68 @@ exports.getCurrentUser = function(req, res) {
   });
 };
 
+/**
+ * @api {get} /user/:id Получить пользователя
+ * @apiGroup User
+ *
+ * @apiParam {Number} id Id пользователя.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200,
+ *       "user": {
+ *         "id": 1,
+ *         "firstName": "Петр",
+ *         "lastName": "Петров",
+ *         "email": "petr@gmail.com",
+ *         "phone": "+79099993344",
+ *         "address": "Ростов-на-Дону, Красноармейская, 11",
+ *         "photo": "/images/user-image.jpg",
+ *       }
+ *     }
+ */
 exports.getUser = function(req, res) {
+  const { id } = req.params;
+
+  if (!id) {
+    res.send({
+      status: 500,
+      message: 'Не указан id',
+    });
+
+    logger('"getUser", Не указан id');
+    return;
+  }
+
   db.get(`
-    SELECT *
+    SELECT id,
+           firstName,
+           lastName,
+           email,
+           phone,
+           address,
+           photo
     FROM user
     WHERE id = ?
-  `, [req.params.id], (error, user) => {
+  `, [id], (error, user) => {
     if (error) {
-      return console.error(error.message);
-    }
-
-    if (!user) {
-      res.status(500).send('Пользователь не существует');
+      logger(error.message);
       return;
     }
 
-    res.status(200).send(user);
+    if (!user) {
+      res.send({
+        status: 500,
+        message: 'Пользователь не существует',
+      });
+
+      return;
+    }
+
+    res.send({
+      status: 200,
+      user,
+    });
   });
 };
 
