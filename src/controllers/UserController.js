@@ -167,33 +167,71 @@ exports.register = function(req, res) {
   });
 };
 
-exports.me = function(req, res) {
-  const token = req.body.token;
+/**
+ * @api {post} /user/me Получить текущего пользователя
+ * @apiGroup User
+ *
+ * @apiParam {String} token Токен пользователя.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200,
+ *       "user": {
+ *         "id": 1,
+ *         "firstName": "Петр",
+ *         "lastName": "Петров",
+ *         "email": "petr@gmail.com",
+ *         "phone": "+79099993344",
+ *         "address": "Ростов-на-Дону, Красноармейская, 11",
+ *         "photo": "/images/user-image.jpg",
+ *       }
+ *     }
+ */
+exports.getCurrentUser = function(req, res) {
+  const { token } = req.body;
 
   if (!token) {
+    logger('"getCurrentUser", не пришли данные token');
+
     res.send({
       status: 500,
-      message: 'Не пришли данные token',
+      message: 'Нет токена',
     });
 
     return;
   }
 
   db.get(`
-    SELECT *
+    SELECT id,
+           firstName,
+           lastName,
+           email,
+           phone,
+           address,
+           photo
     FROM user
     WHERE token = ?
-  `, [token], (error, user) => {
+  `, [token], function(error, user) {
     if (error) {
-      return console.error(error.message);
-    }
-
-    if (!user) {
-      res.status(500).send('Пользователь не существует');
+      logger(error.message);
       return;
     }
 
-    res.status(200).send(user);
+    if (!user) {
+      logger('"getCurrentUser", пользователь с таким токеном не существует');
+
+      res.send({
+        status: 500,
+        message: 'Пользователь с таким token не существует',
+      });
+
+      return;
+    }
+
+    res.send({
+      status: 200,
+      user,
+    });
   });
 };
 
