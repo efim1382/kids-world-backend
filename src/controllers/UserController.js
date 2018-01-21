@@ -423,45 +423,114 @@ exports.getbestSalers = function(req, res) {
   });
 };
 
+/**
+ * @api {post} /user/address changeAddress
+ * @apiGroup User
+ *
+ * @apiDescription Изменить адрес пользователя
+ *
+ * @apiParam {Number} id Id пользователя.
+ * @apiParam {String} address Адрес пользователя.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200
+ *     }
+ */
 exports.changeAddress = function(req, res) {
+  const { id, address } = req.body;
+
   db.run(`
     UPDATE user
     SET address = ?
     WHERE id = ?
-  `, [req.body.address, req.body.id], function(error) {
+  `, [address, id], function(error) {
     if (error) {
-      return console.error(error.message);
+      logger(error.message);
+
+      res.send({
+        status: 500,
+        message: `Ошибка при изменении адреса: ${error.message}`,
+      });
+
+      return;
     }
 
-    res.status(200).send();
+    res.send({ status: 200 });
   });
 };
 
+/**
+ * @api {post} /user/phone changePhone
+ * @apiGroup User
+ *
+ * @apiDescription Изменить телефон пользователя
+ *
+ * @apiParam {Number} id Id пользователя.
+ * @apiParam {String} phone Телефон пользователя.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200
+ *     }
+ */
 exports.changePhone = function(req, res) {
+  const { id, phone } = req.body;
+
   db.run(`
     UPDATE user
     SET phone = ?
     WHERE id = ?
-  `, [req.body.phone, req.body.id], function(error) {
+  `, [phone, id], function(error) {
     if (error) {
-      return console.error(error.message);
+      logger(error.message);
+
+      res.send({
+        status: 500,
+        message: `Ошибка при изменении телефона: ${error.message}`,
+      });
+
+      return;
     }
 
-    res.status(200).send();
+    res.send({ status: 200 });
   });
 };
 
+/**
+ * @api {post} /user/email changeEmail
+ * @apiGroup User
+ *
+ * @apiDescription Изменить email пользователя
+ *
+ * @apiParam {Number} id Id пользователя.
+ * @apiParam {String} email Email пользователя.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200
+ *     }
+ */
 exports.changeEmail = function(req, res) {
+  const { id, email } = req.body;
+
   db.run(`
     UPDATE user
     SET email = ?
     WHERE id = ?
-  `, [req.body.email, req.body.id], function(error) {
+  `, [email, id], function(error) {
     if (error) {
-      return console.error(error.message);
+      logger(error.message);
+
+      res.send({
+        status: 500,
+        message: `Ошибка при изменении почты: ${error.message}`,
+      });
+
+      return;
     }
 
-    res.status(200).send();
+    res.send({ status: 200 });
   });
 };
 
