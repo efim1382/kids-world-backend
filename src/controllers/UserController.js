@@ -8,8 +8,10 @@ const multer  = require('multer');
 const rimraf = require('rimraf');
 
 /**
- * @api {post} /auth/login Авторизация
+ * @api {post} /auth/login login
  * @apiGroup User
+ *
+ * @apiDescription Авторизация
  *
  * @apiParam {String} email Эл. почта пользователя.
  * @apiParam {String} password Пароль.
@@ -66,8 +68,10 @@ exports.login = function(req, res) {
 }
 
 /**
- * @api {post} /auth/register Регистрация
+ * @api {post} /auth/register register
  * @apiGroup User
+ *
+ * @apiDescription Регистрация
  *
  * @apiParam {String} firstName Имя.
  * @apiParam {String} lastName Фамилия.
@@ -168,8 +172,10 @@ exports.register = function(req, res) {
 };
 
 /**
- * @api {post} /user/me Получить текущего пользователя
+ * @api {post} /user/me getCurrentUser
  * @apiGroup User
+ *
+ * @apiDescription Получить текущего пользователя по token
  *
  * @apiParam {String} token Токен пользователя.
  *
@@ -236,8 +242,10 @@ exports.getCurrentUser = function(req, res) {
 };
 
 /**
- * @api {get} /user/:id Получить пользователя
+ * @api {get} /user/:id getUser
  * @apiGroup User
+ *
+ * @apiDescription Получить пользователя по id
  *
  * @apiParam {Number} id Id пользователя.
  *
@@ -300,45 +308,118 @@ exports.getUser = function(req, res) {
   });
 };
 
+/**
+ * @api {get} /users getUsers
+ * @apiGroup User
+ *
+ * @apiDescription Получить всех пользователей
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200,
+ *       "user": [{
+ *         "id": 1,
+ *         "firstName": "Петр",
+ *         "lastName": "Петров",
+ *         "email": "petr@gmail.com",
+ *         "phone": "+79099993344",
+ *         "address": "Ростов-на-Дону, Красноармейская, 11",
+ *         "photo": "/images/user-image.jpg",
+ *       }, {
+ *         "id": 2,
+ *         "firstName": "Иван",
+ *         "lastName": "Иванов",
+ *         "email": "ivan@gmail.com",
+ *         "phone": "+79099993344",
+ *         "address": "Ростов-на-Дону, Красноармейская, 11",
+ *         "photo": "/images/user-image.jpg",
+ *       }]
+ *     }
+ */
 exports.getUsers = function(req, res) {
   db.all(`
-    SELECT *
+    SELECT id,
+           firstName,
+           lastName,
+           email,
+           phone,
+           address,
+           photo
     FROM user
   `, [], (error, users) => {
     if (error) {
-      return console.error(error.message);
-    }
-
-    if (!users) {
-      res.status(500).send('Пользователей нет');
+      logger(error.message);
       return;
     }
 
-    res.status(200).send(users);
+    if (!users) {
+      res.send({
+        status: 500,
+        message: 'Пользователей нет',
+      });
+
+      return;
+    }
+
+    res.send({
+      status: 200,
+      users,
+    });
   });
 };
 
+/**
+ * @api {get} /users/bestSalers getbestSalers
+ * @apiGroup User
+ *
+ * @apiDescription Получить трех пользователей с наибольшим кол-вом положительных отзывов
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200,
+ *       "user": [{
+ *         "likes": 143,
+ *         "id": 1,
+ *         "firstName": "Петр",
+ *         "lastName": "Петров",
+ *         "photo": "/images/user-image.jpg",
+ *       }, {
+ *         "likes": 83,
+ *         "id": 2,
+ *         "firstName": "Иван",
+ *         "lastName": "Иванов",
+ *         "photo": "/images/user-image.jpg",
+ *       }, {
+ *         "likes": 43,
+ *         "id": 3,
+ *         "firstName": "Сергей",
+ *         "lastName": "Сергеев",
+ *         "photo": "/images/user-image.jpg",
+ *       }]
+ *     }
+ */
 exports.getbestSalers = function(req, res) {
   db.all(`
     SELECT DISTINCT count(review.id) as likes,
                     user.id,
-                    user.photo,
                     user.firstName,
-                    user.lastName
+                    user.lastName,
+                    user.photo
     FROM user, review
     WHERE user.id = review.idRecipient
     AND review.emotion = 'like'
     GROUP BY user.id
+    LIMIT 3
   `, [], function(error, users) {
     if (error) {
-      return console.error(error.message);
-    }
-
-    if (!users) {
+      logger(error.message);
       return;
     }
 
-    res.status(200).send(users);
+    res.send({
+      status: 200,
+      users,
+    });
   });
 };
 
