@@ -1,6 +1,12 @@
 const uuidv4 = require('uuid/v4');
 const db = require('../database')();
-const { logger } = require('../functions');
+
+const {
+  logger,
+  createUserPhotoDir,
+  deleteUserAdverts,
+} = require('../functions');
+
 const passwordHash = require('password-hash');
 const fs = require('fs');
 const path = require('path');
@@ -567,7 +573,6 @@ exports.changeEmail = function(req, res) {
   });
 };
 
-
 /**
  * @api {post} /user/password changePassword
  * @apiGroup User
@@ -655,20 +660,8 @@ exports.changePassword = function(req, res) {
   });
 };
 
-const createUserPhotoDir = (id) => {
-  if (!fs.existsSync('upload')) {
-    fs.mkdirSync('upload');
-  }
 
-  if (!fs.existsSync('upload/users')) {
-    fs.mkdirSync('upload/users');
-  }
-
-  if (!fs.existsSync(`upload/users/${id}`)) {
-    fs.mkdirSync(`upload/users/${id}`);
-  }
-}
-
+/* Переделать изменение фото и multer */
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const userId = req.body.id;
@@ -704,7 +697,6 @@ const storage = multer.diskStorage({
         cb(null, `upload/users/${userId}`);
       });
     });
-
   },
 
   filename: function (req, file, cb) {
@@ -720,28 +712,38 @@ exports.changePhoto = function(req, res) {
   });
 };
 
-const deleteUserAdverts = (adverts) => {
-  adverts.forEach(advert => {
-    let imagesPath = `${process.env.ROOT_PATH}/upload/adverts/${advert.id}`;
-
-    if (fs.existsSync(imagesPath)) {
-      rimraf(imagesPath, function() {});
-    }
-  });
-};
-
+/**
+ * @api {delete} /user/delete deleteProfile
+ * @apiGroup User
+ *
+ * @apiDescription Удалить профиль
+ *
+ * @apiParam {Number} id Id пользователя.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200
+ *     }
+ */
 exports.deleteProfile = function(req, res) {
   const { id } = req.body;
 
+  if (!id) {
+    logger('Нет id пользователя');
+
+    res.send({
+      status: 500,
+      message: 'Ошибка при удалении пользователя',
+    });
+
+    return;
+  }
+
   db.all(`
-    SELECT *
+    SELECT id
     FROM advert
     WHERE idUser = ?
   `, [id], function(error, adverts) {
-    if (error) {
-      return console.error(error.message);
-    }
-
     if (adverts) {
       deleteUserAdverts(adverts);
     }
@@ -758,10 +760,17 @@ exports.deleteProfile = function(req, res) {
       WHERE id = ?
     `, [id], function(error) {
       if (error) {
-        return console.error(error.message);
+        logger('Ошибка при удалении пользователя');
+
+        res.send({
+          status: 500,
+          message: 'Ошибка при удалении пользователя',
+        });
+
+        return;
       }
 
-      res.status(200).send();
+      res.send({ status: 200 });
     });
   });
 };
