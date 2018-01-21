@@ -440,6 +440,17 @@ exports.getbestSalers = function(req, res) {
 exports.changeAddress = function(req, res) {
   const { id, address } = req.body;
 
+  if (!id || !address) {
+    logger('Введены не все данные');
+
+    res.send({
+      status: 500,
+      message: 'Введены не все данные',
+    });
+
+    return;
+  }
+
   db.run(`
     UPDATE user
     SET address = ?
@@ -450,7 +461,7 @@ exports.changeAddress = function(req, res) {
 
       res.send({
         status: 500,
-        message: `Ошибка при изменении адреса: ${error.message}`,
+        message: 'Ошибка при изменении адреса',
       });
 
       return;
@@ -477,6 +488,17 @@ exports.changeAddress = function(req, res) {
 exports.changePhone = function(req, res) {
   const { id, phone } = req.body;
 
+  if (!id || !phone) {
+    logger('Введены не все данные');
+
+    res.send({
+      status: 500,
+      message: 'Введены не все данные',
+    });
+
+    return;
+  }
+
   db.run(`
     UPDATE user
     SET phone = ?
@@ -487,7 +509,7 @@ exports.changePhone = function(req, res) {
 
       res.send({
         status: 500,
-        message: `Ошибка при изменении телефона: ${error.message}`,
+        message: 'Ошибка при изменении телефона',
       });
 
       return;
@@ -514,6 +536,17 @@ exports.changePhone = function(req, res) {
 exports.changeEmail = function(req, res) {
   const { id, email } = req.body;
 
+  if (!id || !email) {
+    logger('Введены не все данные');
+
+    res.send({
+      status: 500,
+      message: 'Введены не все данные',
+    });
+
+    return;
+  }
+
   db.run(`
     UPDATE user
     SET email = ?
@@ -524,7 +557,7 @@ exports.changeEmail = function(req, res) {
 
       res.send({
         status: 500,
-        message: `Ошибка при изменении почты: ${error.message}`,
+        message: 'Ошибка при изменении почты',
       });
 
       return;
@@ -534,12 +567,45 @@ exports.changeEmail = function(req, res) {
   });
 };
 
+
+/**
+ * @api {post} /user/password changePassword
+ * @apiGroup User
+ *
+ * @apiDescription Изменить пароль пользователя
+ *
+ * @apiParam {Number} id Id пользователя.
+ * @apiParam {String} password Текущий пароль пользователя.
+ * @apiParam {String} newPassword Новый пароль пользователя.
+ * @apiParam {String} confirmNewPassword Повтор нового пароля пользователя.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200
+ *     }
+ */
 exports.changePassword = function(req, res) {
   const { id, password, newPassword, confirmNewPassword } = req.body;
 
+  if (!id || !password || !newPassword || !confirmNewPassword) {
+    logger('Введены не все данные');
+
+    res.send({
+      status: 500,
+      message: 'Введены не все данные',
+    });
+
+    return;
+  }
+
   if (newPassword !== confirmNewPassword) {
-    // 500?
-    res.status(500).send();
+    logger('Пароли не совпадают');
+    
+    res.send({
+      status: 500,
+      message: 'Пароли не совпадают',
+    });
+
     return;
   }
 
@@ -549,11 +615,22 @@ exports.changePassword = function(req, res) {
     WHERE id = ?
   `, [id], function(error, user) {
     if (error) {
-      return console.error(error.message);
+      logger(error.message);
+
+      res.send({
+        status: 500,
+        message: 'Пользователя не существует',
+      });
+
+      return;
     }
 
     if (!passwordHash.verify(password, user.hash)) {
-      res.status(500).send();
+      res.send({
+        status: 500,
+        message: 'Текущий пароль указан неверно',
+      });
+
       return;
     }
 
@@ -563,10 +640,17 @@ exports.changePassword = function(req, res) {
       WHERE id = ?
     `, [passwordHash.generate(newPassword), id], function(error) {
       if (error) {
-        return console.error(error.message);
+        logger(error.message);
+
+        res.send({
+          status: 500,
+          message: 'Ошибка при изменении пароля',
+        });
+
+        return;
       }
 
-      res.status(200).send({ message: 'ok' });
+      res.send({ status: 200 });
     });
   });
 };
