@@ -373,22 +373,52 @@ exports.editAdvert = function(req, res) {
   });
 };
 
+/**
+ * @api {get} /adverts/user/:id getUserAdverts
+ * @apiGroup Adverts
+ *
+ * @apiDescription Получение объявлений пользователя
+ *
+ * @apiParam {Number} id Id пользователя.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200,
+ *       "adverts": [{
+ *         "id": 1,
+ *         "title": "Детские тапки",
+ *         "mainImage": "/images/ad-image.jpg"
+ *       }]
+ *     }
+ */
 exports.getUserAdverts = function(req, res) {
+  const { id } = req.params;
+
+  if (!id) {
+    logger('Нет id');
+    return;
+  }
+
   db.all(`
-    SELECT *
+    SELECT id, title, mainImage
     FROM advert
     WHERE idUser = ?
-  `, [req.params.id], function(error, adverts) {
+  `, [id], function(error, adverts) {
     if (error) {
-      return console.log(error.message);
-    }
+      logger(error.message);
 
-    if (!adverts) {
-      res.status(400).send({ message: 'У пользователя нет объявлений' });
+      res.send({
+        status: 500,
+        message: 'Ошибка при получении объявлений',
+      });
+
       return;
     }
 
-    res.status(200).send(adverts);
+    res.send({
+      status: 200,
+      adverts,
+    });
   });
 };
 
