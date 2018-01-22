@@ -422,9 +422,34 @@ exports.getUserAdverts = function(req, res) {
   });
 };
 
+/**
+ * @api {post} /advert/:id/favorite setFavoriteAdvert
+ * @apiGroup Adverts
+ *
+ * @apiDescription Добавление объявления в избранное
+ *
+ * @apiParam {userId} id Id пользователя.
+ * @apiParam {advertId} id Id объявления.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200,
+ *     }
+ */
 exports.setFavoriteAdvert = function(req, res) {
   const userId = req.body.userId;
   const advertId = req.params.id;
+
+  if (!userId || !advertId) {
+    logger('Не пришли все данные');
+
+    res.send({
+      status: 500,
+      message: 'Ошибка',
+    });
+
+    return;
+  }
 
   db.get(`
     SELECT id
@@ -439,7 +464,14 @@ exports.setFavoriteAdvert = function(req, res) {
         VALUES (?, ?)
       `, [userId, advertId], function(error) {
         if (error) {
-          console.log(error.message);
+          logger(error.message);
+
+          res.send({
+            status: 500,
+            message: 'Ошибка',
+          });
+
+          return;
         }
       });
     } else {
@@ -449,18 +481,50 @@ exports.setFavoriteAdvert = function(req, res) {
         AND idAdvert = ?
       `, [userId, advertId], function(error) {
         if (error) {
-          console.error(error.message);
+          logger(error.message);
+
+          res.send({
+            status: 500,
+            message: 'Ошибка',
+          });
+
+          return;
         }
       });
     }
 
-    res.status(200).send({ message: 'ok' });
+    res.send({ status: 200 });
   });
-
 };
 
+/**
+ * @api {get} /advert/:id/favorite/user/:userId isAdvertFavorite
+ * @apiGroup Adverts
+ *
+ * @apiDescription Проверка помечено ли объявление как избранное
+ *
+ * @apiParam {id} id Id объявления.
+ * @apiParam {userId} id Id пользователя.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200,
+ *       "isFavorite": true
+ *     }
+ */
 exports.isAdvertFavorite = function(req, res) {
   const { id, userId } = req.params;
+
+  if (!id || !userId) {
+    logger('Не пришли все данные');
+
+    res.send({
+      status: 500,
+      message: 'Не пришли все данные',
+    });
+
+    return;
+  }
   
   db.get(`
     SELECT *
@@ -469,12 +533,30 @@ exports.isAdvertFavorite = function(req, res) {
     AND idAdvert = ?
     LIMIT 1
   `, [userId, id], function(error, favorite) {
-    if (!favorite) {
-      res.send(false);
+    if (error) {
+      logger(error.message);
+
+      res.send({
+        status: 500,
+        message: 'Ошибка при проверке',
+      });
+
       return;
     }
 
-    res.send(true);
+    if (!favorite) {
+      res.send({
+        status: 200,
+        isFavorite: false,
+      });
+
+      return;
+    }
+
+    res.send({
+      status: 200,
+      isFavorite: true,
+    });
   });
 };
 
