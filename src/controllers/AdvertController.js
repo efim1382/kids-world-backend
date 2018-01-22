@@ -560,8 +560,37 @@ exports.isAdvertFavorite = function(req, res) {
   });
 };
 
+/**
+ * @api {get} /adverts/favorite/user/:userId getFavoritesAdverts
+ * @apiGroup Adverts
+ *
+ * @apiDescription Получение избранных объявлений
+ *
+ * @apiParam {userId} id Id объявления.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200,
+ *       "adverts": [{
+ *         "id": 1,
+ *         "title": "Детские тапки",
+ *         "mainImage": "/images/ad-image.jpg"
+ *       }]
+ *     }
+ */
 exports.getFavoritesAdverts = function(req, res) {
   const { userId } = req.params;
+
+  if (!userId) {
+    logger('Не пришел id');
+
+    res.send({
+      status: 500,
+      message: 'Ошибка',
+    });
+
+    return;
+  }
 
   db.all(`
     SELECT advert.id,
@@ -572,16 +601,43 @@ exports.getFavoritesAdverts = function(req, res) {
     AND favorites.idUser = ?
   `, [userId], function(error, adverts) {
     if (error) {
-      return console.error(error.message);
+      logger(error.message);
+
+      res.send({
+        status: 500,
+        message: 'Ошибка при получении объявления',
+      });
+
+      return;
     }
 
-    res.status(200).send(adverts);
+    res.send({
+      status: 200,
+      adverts,
+    });
   });
-
 };
 
+/**
+ * @api {get} /adverts/:id/delete deleteAdvert
+ * @apiGroup Adverts
+ *
+ * @apiDescription Удаление объявления
+ *
+ * @apiParam {id} id Id объявления.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200
+ *     }
+ */
 exports.deleteAdvert = function(req, res) {
   const { id } = req.params;
+
+  if (!id) {
+    logger('Не пришел id');
+    return;
+  }
 
   db.get(`
     SELECT *
@@ -589,12 +645,25 @@ exports.deleteAdvert = function(req, res) {
     WHERE id = ?
   `, [id], (error, advert) => {
     if (error) {
-      return console.error(error.message);
+      logger(error.message);
+
+      res.send({
+        status: 500,
+        message: 'Ошибка при удалении объявления',
+      });
+
+      return;
     }
 
     if (!advert) {
-      // 500 ?
-      res.status(500);
+      logger('Нет такого объявления');
+
+      res.send({
+        status: 500,
+        message: 'Ошибка при удалении объявления',
+      });
+
+      return;
     }
 
     let imagesPath = `${process.env.ROOT_PATH}/upload/adverts/${id}`;
@@ -609,10 +678,17 @@ exports.deleteAdvert = function(req, res) {
       WHERE id = ?
     `, [id], (error) => {
       if (error) {
-        return console.error(error.message);
+        logger(error.message);
+
+        res.send({
+          status: 500,
+          message: 'Ошибка при удалении объявления',
+        });
+
+        return;
       }
 
-      res.status(200).send();
+      res.send({ status: 200 });
     });
   });
 };
