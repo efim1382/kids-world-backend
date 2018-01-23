@@ -70,10 +70,119 @@ exports.getAdverts = function(req, res) {
 };
 
 /**
+ * @api {post} /adverts/logged getAdvertsLogged
+ * @apiGroup Adverts
+ *
+ * @apiDescription Получить все объявления, если пользователь авторизован
+ *
+ * @apiParam {Number} id Id пользователя.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200,
+ *       "adverts": [{
+ *         "id": 1,
+ *         "title": "Детские тапки",
+ *         "date": "15 декабря, 2017",
+ *         "price": 1250,
+ *         "category": "footwear",
+ *         "mainImage": "/images/ad-image.jpg",
+ *         "userId": 3,
+ *         "firstName": "Петр",
+ *         "lastName": "Петров",
+ *         "address": "Ростов-на-Дону, Красноармейская, 12",
+ *         "isFavorite": "true",
+ *         "photo": "/images/user-image.jpg"
+ *       }]
+ *     }
+ */
+exports.getAdvertsLogged = function(req, res) {
+  const { id } = req.body;
+  let advertsArray = [];
+
+  if (!id) {
+    logger('Не пришел id');
+
+    res.send({
+      status: 500,
+      message: 'Ошибка',
+    });
+
+    return;
+  }
+
+  db.all(`
+    SELECT advert.id,
+           advert.title,
+           advert.date,
+           advert.price,
+           advert.category,
+           advert.mainImage,
+           user.id as userId,
+           user.firstName,
+           user.lastName,
+           user.address,
+           user.photo
+    FROM advert, user
+    WHERE advert.idUser = user.id
+    ORDER BY advert.id
+    DESC
+  `, [], (error, adverts) => {
+    if (error) {
+      logger(error.message);
+      return;
+    }
+
+    if (!adverts) {
+      logger('Нет объявлений');
+
+      res.send({
+        status: 200,
+        adverts: [],
+      });
+
+      return;
+    }
+
+    adverts.forEach((advert, index) => {
+      new Promise((resolve, reject) => {
+        db.get(`
+          SELECT id
+          FROM favorites
+          WHERE idUser = ?
+          AND idAdvert = ?
+        `, [id, advert.id], function(error, favorite) {
+          if (error) {
+            logger(error.message);
+            return;
+          }
+
+          resolve(favorite);
+        });
+      }).then(favorite => {
+        advertsArray.push({
+          ...advert,
+          isFavorite: favorite ? true : false,
+        });
+
+        if (index === adverts.length - 1) {
+          res.send({
+            status: 200,
+            adverts: advertsArray,
+          });
+        }
+      });
+    });
+  });
+};
+
+/**
  * @api {get} /adverts/:id getAdvert
  * @apiGroup Adverts
  *
  * @apiDescription Получить объявление по id
+ *
+ * @apiParam {String} description Описание.
  *
  * @apiSuccessExample Success-Response:
  *     {
