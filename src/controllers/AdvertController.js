@@ -509,7 +509,7 @@ exports.getUserAdverts = function(req, res) {
   }
 
   db.all(`
-    SELECT id, title, mainImage
+    SELECT id, title, mainImage, description
     FROM advert
     WHERE idUser = ?
   `, [id], function(error, adverts) {

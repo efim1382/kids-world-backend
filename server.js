@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+const http = require('http').Server(app);
+const io = require('./src/chat')(http);
 const port = 8000;
 const bodyParser = require('body-parser');
 const path = require('path');
@@ -9,7 +11,8 @@ let db = require('./src/database')();
 process.env.ROOT_PATH = path.resolve(__dirname);
 
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Credentials", true);
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
   next();
@@ -36,7 +39,7 @@ app.use(fileUpload());
 
 require('./src/api/_all')(app);
 
-app.listen(port, function () {
+http.listen(port, function () {
   console.log('Server app listening on port: ' + port);
 });
 

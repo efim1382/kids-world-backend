@@ -51,6 +51,12 @@ module.exports = function() {
       FOREIGN KEY (idUser) REFERENCES user(id) ON DELETE CASCADE,
       FOREIGN KEY (idAdvert) REFERENCES advert(id) ON DELETE CASCADE
     )`);
+    db.run(`CREATE TABLE IF NOT EXISTS messages (
+      id integer PRIMARY KEY AUTOINCREMENT,
+      idUserFrom integer,
+      idUserTo integer,
+      message varchar(255)
+    )`);
   });
 
   return db;
