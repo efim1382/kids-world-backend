@@ -483,12 +483,13 @@ exports.editAdvert = function(req, res) {
 };
 
 /**
- * @api {get} /adverts/user/:id getUserAdverts
+ * @api {post} /adverts/user/:id getUserAdverts
  * @apiGroup Adverts
  *
  * @apiDescription Получение объявлений пользователя
  *
  * @apiParam {Number} id Id пользователя.
+ * @apiParam {Number} userId Id текущего пользователя. Не обязательно, если передано, отдаем поле isFavorite
  *
  * @apiSuccessExample Success-Response:
  *     {
@@ -502,6 +503,8 @@ exports.editAdvert = function(req, res) {
  */
 exports.getUserAdverts = function(req, res) {
   const { id } = req.params;
+  const { userId } = req.body;
+  let advertsArray = [];
 
   if (!id) {
     logger('Нет id');
@@ -524,9 +527,44 @@ exports.getUserAdverts = function(req, res) {
       return;
     }
 
-    res.send({
-      status: 200,
-      adverts,
+    if (!userId) {
+      res.send({
+        status: 200,
+        adverts,
+      });
+
+      return;
+    }
+
+    adverts.forEach((advert, index) => {
+      new Promise((resolve, reject) => {
+        db.get(`
+          SELECT id
+          FROM favorites
+          WHERE idUser = ?
+          AND idAdvert = ?
+        `, [userId, advert.id], function(error, favorite) {
+          if (error) {
+            logger(error.message);
+            return;
+          }
+
+          resolve(favorite);
+        });
+      }).then(favorite => {
+        advertsArray.push({
+          ...advert,
+          isFavorite: favorite ? true : false,
+        });
+
+        if (index === adverts.length - 1) {
+          console.log(advertsArray);
+          res.send({
+            status: 200,
+            adverts: advertsArray,
+          });
+        }
+      });
     });
   });
 };
