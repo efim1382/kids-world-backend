@@ -558,7 +558,6 @@ exports.getUserAdverts = function(req, res) {
         });
 
         if (index === adverts.length - 1) {
-          console.log(advertsArray);
           res.send({
             status: 200,
             adverts: advertsArray,
