@@ -96,7 +96,8 @@ exports.getUserReviews = function(req, res) {
   }
 
   db.all(`
-    SELECT user.id as idRecipient,
+    SELECT review.id as id,
+           user.id as idRecipient,
            review.idAuthor as idAuthor,
            user.firstName,
            user.lastName,
