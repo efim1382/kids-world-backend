@@ -5,6 +5,7 @@ const { logger } = require('../functions');
 exports.createChat = function(req, res) {
   const { idAuthor, idRecipient } = req.body;
   let idNewChat = 0;
+  let isChatExist = false;
 
   if (!idAuthor || !idRecipient) {
     logger('createChat, не пришли данные idAuthor или idRecipient');
@@ -17,39 +18,67 @@ exports.createChat = function(req, res) {
     return;
   }
 
-  db.run(`
-    INSERT INTO chat(lastMessage)
-    VALUES ('')
-  `, [], function(error) {
-    if (error) {
-      logger('createChat, ошибка при добавлении пустой записи в chat');
+  db.all(`
+    SELECT idChat,
+           count(idChat) as count
+    FROM chatUser
+    WHERE idUser IN (?, ?)
+    GROUP BY idChat
+  `, [idAuthor, idRecipient], function(error, chatsUser) {
+    chatsUser.forEach(chat => {
+      if (chat.count === 2) {
+        isChatExist = true;
 
-      res.send({
-        status: 500,
-        message: 'Ошибка при переходе к чату',
-      });
+        res.send({
+          status: 200,
+          
+          chat: {
+            id: chat.idChat
+          },
+        });
 
+        return;
+      }
+    });
+
+    if (isChatExist) {
       return;
     }
 
-    idNewChat = this.lastID;
+    db.run(`
+      INSERT INTO chat(lastMessage)
+      VALUES ('')
+    `, [], function(error) {
+      if (error) {
+        logger('createChat, ошибка при добавлении пустой записи в chat');
 
-    db.serialize(function () {
-      db.run(`
-        INSERT INTO chatUser(idChat, idUser)
-        VALUES (?, ?)
-      `, [idNewChat, idAuthor]);
-
-      db.run(`
-        INSERT INTO chatUser(idChat, idUser)
-        VALUES (?, ?)
-      `, [idNewChat, idRecipient], function () {
         res.send({
-          status: 200,
+          status: 500,
+          message: 'Ошибка при переходе к чату',
+        });
 
-          chat: {
-            id: idNewChat,
-          },
+        return;
+      }
+
+      idNewChat = this.lastID;
+
+      db.serialize(function () {
+        db.run(`
+          INSERT INTO chatUser(idChat, idUser)
+          VALUES (?, ?)
+        `, [idNewChat, idAuthor]);
+
+        db.run(`
+          INSERT INTO chatUser(idChat, idUser)
+          VALUES (?, ?)
+        `, [idNewChat, idRecipient], function () {
+          res.send({
+            status: 200,
+
+            chat: {
+              id: idNewChat,
+            },
+          });
         });
       });
     });

@@ -268,7 +268,7 @@ exports.getCurrentUser = function(req, res) {
  *     }
  */
 exports.getUser = function(req, res, idUser) {
-  let id = idUser || req.params.id;
+  let id = Number.isInteger(idUser) ? idUser : req.params.id;
 
   if (!id) {
     res.send({
