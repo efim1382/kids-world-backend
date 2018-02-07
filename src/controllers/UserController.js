@@ -267,8 +267,8 @@ exports.getCurrentUser = function(req, res) {
  *       }
  *     }
  */
-exports.getUser = function(req, res) {
-  const { id } = req.params;
+exports.getUser = function(req, res, idUser) {
+  let id = idUser || req.params.id;
 
   if (!id) {
     res.send({

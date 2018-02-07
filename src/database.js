@@ -51,11 +51,24 @@ module.exports = function() {
       FOREIGN KEY (idUser) REFERENCES user(id) ON DELETE CASCADE,
       FOREIGN KEY (idAdvert) REFERENCES advert(id) ON DELETE CASCADE
     )`);
-    db.run(`CREATE TABLE IF NOT EXISTS messages (
+    db.run(`CREATE TABLE IF NOT EXISTS chat (
       id integer PRIMARY KEY AUTOINCREMENT,
-      idUserFrom integer,
-      idUserTo integer,
-      message varchar(255)
+      lastMessage varchar(255)
+    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS chatUser (
+      id integer PRIMARY KEY AUTOINCREMENT,
+      idChat integer,
+      idUser integer,
+      FOREIGN KEY (idChat) REFERENCES chat(id) ON DELETE CASCADE,
+      FOREIGN KEY (idUser) REFERENCES user(id) ON DELETE CASCADE
+    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS message (
+      id integer PRIMARY KEY AUTOINCREMENT,
+      idChat integer,
+      idUser integer,
+      text varchar(255),
+      FOREIGN KEY (idChat) REFERENCES chat(id) ON DELETE CASCADE,
+      FOREIGN KEY (idUser) REFERENCES user(id) ON DELETE CASCADE
     )`);
   });
 

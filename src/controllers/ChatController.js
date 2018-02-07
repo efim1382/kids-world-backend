@@ -1,128 +1,77 @@
 const db = require('../database')();
+const User = require('./UserController');
 const { logger } = require('../functions');
 
-/**
- * @api {post} /chat/messages getMessages
- * @apiGroup Chat
- *
- * @apiDescription Получить сообщения пользователя в чате
- *
- * @apiParam {Number} idUserFrom Id текущего пользователя.
- * @apiParam {Number} idUserTo Id пользователя по переписке.
- *
- * @apiSuccessExample Success-Response:
- *     {
- *       "status": 200,
- *       "messages": [{
- *         "id": 1,
- *         "idUserFrom": 1,
- *         "idUserTo": 2,
- *         "message": "Здравствуйте!"
- *         "author": "you"
- *       }, {
- *         "id": 2,
- *         "idUserFrom": 2,
- *         "idUserTo": 1,
- *         "message": "Здравствуйте!"
- *         "author": "user"
- *       }]
- *     }
- */
-exports.getMessages = function(req, res) {
-  const { idUserFrom, idUserTo } = req.body;
+exports.createChat = function(req, res) {
+  const { idAuthor, idRecipient } = req.body;
+  let idNewChat = 0;
 
-  if (!idUserFrom || !idUserTo) {
-    logger('Ошибка при загрузке сообщений');
+  if (!idAuthor || !idRecipient) {
+    logger('createChat, не пришли данные idAuthor или idRecipient');
 
     res.send({
       status: 500,
-      message: 'Ошибка при загрузке сообщений',
+      message: 'Ошибка при переходе к чату',
     });
 
     return;
   }
 
-  db.all(`
-    SELECT id,
-           idUserFrom,
-           idUserTo,
-           message,
-           CASE idUserFrom
-             WHEN ? THEN
-               'you'
-             ELSE
-               'user'
-           END author
-    FROM messages
-    WHERE (idUserTo = ? AND idUserFrom = ?) OR
-          (idUserFrom = ? AND idUserTo = ?)
-    ORDER BY id
-  `, [idUserFrom, idUserTo, idUserFrom, idUserTo, idUserFrom], function(error, messages) {
+  db.run(`
+    INSERT INTO chat(lastMessage)
+    VALUES ('')
+  `, [], function(error) {
     if (error) {
-      logger('Ошибка при загрузке сообщений');
+      logger('createChat, ошибка при добавлении пустой записи в chat');
 
       res.send({
         status: 500,
-        message: 'Ошибка при загрузке сообщений',
+        message: 'Ошибка при переходе к чату',
       });
 
       return;
     }
 
-    res.send({
-      status: 200,
-      messages,
+    idNewChat = this.lastID;
+
+    db.serialize(function () {
+      db.run(`
+        INSERT INTO chatUser(idChat, idUser)
+        VALUES (?, ?)
+      `, [idNewChat, idAuthor]);
+
+      db.run(`
+        INSERT INTO chatUser(idChat, idUser)
+        VALUES (?, ?)
+      `, [idNewChat, idRecipient], function () {
+        res.send({
+          status: 200,
+
+          chat: {
+            id: idNewChat,
+          },
+        });
+      });
     });
   });
 };
 
-/**
- * @api {post} /chats getChats
- * @apiGroup Chat
- *
- * @apiDescription Получить список чатов пользователя
- *
- * @apiParam {Number} id Id текущего пользователя.
- *
- * @apiSuccessExample Success-Response:
- *     {
- *       "status": 200,
- *       "chats": [{
- *         "id": 1,
- *         "firstName": "Петр",
- *         "lastName": "Петров",
- *         "photo": "/images/user-image.jpg",
- *         "message": "Здравствуйте"
- *       }]
- *     }
- */
-exports.getChats = function(req, res) {
-  const { id } = req.body;
-
-  if (!id) {
-    logger('Ошибка при получении чатов');
-
-    res.send({
-      status: 500,
-      message: 'Ошибка при получении чатов',
-    });
-
-    return;
-  }
+exports.getUserChats = function(req, res) {
+  const { id } = req.params;
 
   db.all(`
-    SELECT idUserTo as id,
-           firstName,
-           lastName,
-           photo,
-           message
-    FROM messages, user
-    WHERE idUserFrom = ?
-    AND user.id = messages.idUserTo
-    GROUP BY idUserTo
+    SELECT chatUser.idChat,
+           user.firstName,
+           user.lastName,
+           user.photo,
+           chat.lastMessage
+    FROM user, chatUser, chat
+    WHERE user.id = chatUser.idUser
+    AND chat.id = chatUser.idChat
+    AND user.id != ?
   `, [id], function(error, chats) {
     if (error) {
-      logger('Ошибка при получении чатов');
+      logger('getUserChats, ошибка при получении чатов');
 
       res.send({
         status: 500,
@@ -136,5 +85,61 @@ exports.getChats = function(req, res) {
       status: 200,
       chats,
     });
+  });
+};
+
+exports.getChatMessages = function(req, res) {
+  const { id } = req.params;
+
+  db.all(`
+    SELECT message.id as idMessage,
+           message.idUser,
+           text
+    FROM message, chatUser
+    WHERE chatUser.idChat = message.idChat
+    AND message.idUser = chatUser.idUser
+    AND chatUser.idChat = ?
+    GROUP BY idMessage
+  `, [id], function(error, messages) {
+    if (error) {
+      logger('getChatMessages, ошибка при получении сообщений');
+
+      res.send({
+        status: 500,
+        message: 'Ошибка при получении сообщений',
+      });
+
+      return;
+    }
+
+    res.send({
+      status: 200,
+      messages,
+    });
+  });
+};
+
+exports.getChatUser = function(req, res) {
+  const { id, userId } = req.params;
+
+  db.get(`
+    SELECT user.id
+    FROM user, chatUser
+    WHERE user.id = chatUser.idUser
+    AND chatUser.idChat = ?
+    AND user.id != ?
+  `, [id, userId], function(error, user) {
+    if (error) {
+      logger('Ошибка при получении id пользователя чата');
+
+      res.send({
+        status: 500,
+        message: 'Ошибка при получении пользователя',
+      });
+
+      return;
+    }
+
+    User.getUser(req, res, user.id);
   });
 };

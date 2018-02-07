@@ -4,12 +4,12 @@ module.exports = function(http) {
   const { logger } = require('./functions');
 
   io.on('connection', function(socket) {
-    console.log('user connected');
-
     socket.on('message', function(data) {
-      const { userFrom, userTo, message } = data;
+      const { id, userId, message } = data;
 
-      if (!userFrom || !userTo || !message) {
+      if (!id || !userId || !message) {
+        logger('При получении сообщения не пришли все данные');
+
         io.emit('message', {
           status: 500,
           message: 'Ошибка при отправке сообщения',
@@ -18,27 +18,31 @@ module.exports = function(http) {
         return;
       }
 
-      db.run(`
-        INSERT INTO messages (idUserFrom, idUserTo, message)
-        VALUES (?, ?, ?)
-      `, [userFrom, userTo, message], function(error) {
-        if (error) {
-          logger('');
+      db.serialize(function() {
+        db.run(`
+          UPDATE chat
+          SET lastMessage = ?
+          WHERE id = ?
+        `, [message, id]);
 
-          io.emit('message', {
-            status: 500,
-            message: 'Ошибка при отправке сообщения',
-          });
+        db.run(`
+          INSERT INTO message (idChat, idUser, text)
+          VALUES (?, ?, ?)
+        `, [id, userId, message], function(error) {
+          if (error) {
+            logger('При обновлении message ошибка');
 
-          return;
-        }
+            io.emit('message', {
+              status: 500,
+              message: 'Ошибка при отправке сообщения',
+            });
 
-        io.emit('message', { status: 200 });
+            return;
+          }
+
+          io.emit('message', { status: 200 });
+        });
       });
-    });
-
-    socket.on('disconnect', function(){
-      console.log('user disconnected');
     });
   });
 
