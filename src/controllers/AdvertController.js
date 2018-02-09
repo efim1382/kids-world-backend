@@ -469,20 +469,42 @@ exports.editAdvert = function(req, res) {
 exports.getUserAdverts = function(req, res) {
   const { id } = req.params;
   const { userId } = req.body;
-  let advertsArray = [];
 
-  if (!id) {
-    logger('Нет id');
-    return;
+  if (userId) {
+    queryUserAdvertsLogged();
+  } else {
+    queryUserAdverts();
   }
 
-  db.all(`
-    SELECT id, title, mainImage, description
-    FROM advert
-    WHERE idUser = ?
-  `, [id], function(error, adverts) {
+  function queryUserAdverts() {
+    db.all(`
+      SELECT id, title, mainImage, description
+      FROM advert
+      WHERE idUser = ?
+    `, [id], result);
+  }
+
+  function queryUserAdvertsLogged() {
+    db.all(`
+      SELECT id,
+             title,
+             mainImage,
+             description,
+             CASE WHEN EXISTS (
+               SELECT idAdvert
+               FROM favorites
+               WHERE idAdvert = advert.id
+             )
+               THEN 'true'
+             END as isFavorite
+      FROM advert
+      WHERE idUser = ?
+    `, [id], result);
+  }
+
+  function result(error, adverts) {
     if (error) {
-      logger(error.message);
+      logger('Ошибка при получении объявлений');
 
       res.send({
         status: 500,
@@ -492,45 +514,13 @@ exports.getUserAdverts = function(req, res) {
       return;
     }
 
-    if (!userId) {
-      res.send({
-        status: 200,
-        adverts,
-      });
+    console.log(adverts);
 
-      return;
-    }
-
-    adverts.forEach((advert, index) => {
-      new Promise((resolve, reject) => {
-        db.get(`
-          SELECT id
-          FROM favorites
-          WHERE idUser = ?
-          AND idAdvert = ?
-        `, [userId, advert.id], function(error, favorite) {
-          if (error) {
-            logger(error.message);
-            return;
-          }
-
-          resolve(favorite);
-        });
-      }).then(favorite => {
-        advertsArray.push({
-          ...advert,
-          isFavorite: favorite ? true : false,
-        });
-
-        if (index === adverts.length - 1) {
-          res.send({
-            status: 200,
-            adverts: advertsArray,
-          });
-        }
-      });
+    res.send({
+      status: 200,
+      adverts,
     });
-  });
+  }
 };
 
 /**
