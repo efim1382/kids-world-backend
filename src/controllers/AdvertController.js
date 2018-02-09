@@ -98,80 +98,45 @@ exports.getAdverts = function(req, res) {
  */
 exports.getAdvertsLogged = function(req, res) {
   const { id } = req.body;
-  let advertsArray = [];
-
-  if (!id) {
-    logger('Не пришел id');
-
-    res.send({
-      status: 500,
-      message: 'Ошибка',
-    });
-
-    return;
-  }
 
   db.all(`
-    SELECT advert.id,
-           advert.title,
-           advert.date,
-           advert.price,
-           advert.category,
-           advert.mainImage,
+    SELECT advert.id as id,
+           advert.title as title,
+           advert.date as date,
+           advert.price as price,
+           advert.category as category,
+           advert.mainImage as mainImage,
            user.id as userId,
-           user.firstName,
-           user.lastName,
-           user.address,
-           user.photo
-    FROM advert, user
-    WHERE advert.idUser = user.id
+           user.firstName as firstName,
+           user.lastName as lastName,
+           user.address as address,
+           user.photo as photo,
+           CASE WHEN EXISTS (
+             SELECT idAdvert
+             FROM favorites
+             WHERE idAdvert = advert.id
+           )
+             THEN 'true'
+           END AS isFavorite
+    FROM advert
+    INNER JOIN user ON user.id = advert.idUser
     ORDER BY advert.id
     DESC
-  `, [], (error, adverts) => {
+  `, [], function(error, adverts) {
     if (error) {
-      logger(error.message);
-      return;
-    }
-
-    if (!adverts) {
-      logger('Нет объявлений');
+      logger('Ошибка при получении объявлений');
 
       res.send({
-        status: 200,
-        adverts: [],
+        status: 500,
+        message: 'Ошибка при получении объявлений',
       });
 
       return;
     }
 
-    adverts.forEach((advert, index) => {
-      new Promise((resolve, reject) => {
-        db.get(`
-          SELECT id
-          FROM favorites
-          WHERE idUser = ?
-          AND idAdvert = ?
-        `, [id, advert.id], function(error, favorite) {
-          if (error) {
-            logger(error.message);
-            return;
-          }
-
-          resolve(favorite);
-        });
-      }).then(favorite => {
-        advertsArray.push({
-          ...advert,
-          isFavorite: favorite ? true : false,
-        });
-
-        if (index === adverts.length - 1) {
-          res.send({
-            status: 200,
-            adverts: advertsArray,
-          });
-        }
-      });
+    res.send({
+      status: 200,
+      adverts,
     });
   });
 };
