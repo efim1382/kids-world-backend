@@ -514,8 +514,6 @@ exports.getUserAdverts = function(req, res) {
       return;
     }
 
-    console.log(adverts);
-
     res.send({
       status: 200,
       adverts,
