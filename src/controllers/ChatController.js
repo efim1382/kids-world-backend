@@ -89,16 +89,21 @@ exports.getUserChats = function(req, res) {
   const { id } = req.params;
 
   db.all(`
-    SELECT chatUser.idChat,
-           user.firstName,
-           user.lastName,
-           user.photo,
-           chat.lastMessage
-    FROM user, chatUser, chat
-    WHERE user.id = chatUser.idUser
-    AND chat.id = chatUser.idChat
-    AND user.id != ?
-  `, [id], function(error, chats) {
+    SELECT chatUser.idChat as idChat,
+           user.firstName as firstName,
+           user.lastName as lastName,
+           user.photo as photo,
+           chat.lastMessage as lastMessage
+    FROM (
+      SELECT idChat, idUser
+      FROM chatUser
+      WHERE idUser = ?
+    ) userChats
+    INNER JOIN chatUser ON chatUser.idChat = userChats.idChat
+    INNER JOIN user ON user.id = chatUser.idUser
+    INNER JOIN chat ON chat.id = chatUser.idChat
+    WHERE chatUser.idUser != userChats.idUser
+  `, [id], function(error, userChats) {
     if (error) {
       logger('getUserChats, ошибка при получении чатов');
 
@@ -112,7 +117,7 @@ exports.getUserChats = function(req, res) {
 
     res.send({
       status: 200,
-      chats,
+      chats: userChats,
     });
   });
 };
