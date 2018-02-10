@@ -77,8 +77,7 @@ exports.login = function(req, res) {
  *
  * @apiDescription Регистрация
  *
- * @apiParam {String} firstName Имя.
- * @apiParam {String} lastName Фамилия.
+ * @apiParam {String} name Полное имя.
  * @apiParam {String} email Почта.
  * @apiParam {String} phone Телефон.
  * @apiParam {String} address Адрес.
@@ -95,30 +94,20 @@ exports.login = function(req, res) {
  *     }
  */
 exports.register = function(req, res) {
-  const { firstName, lastName, email, phone, address, password, confirmPassword } = req.body;
-  const photo = '/images/user-image.jpg';
+  const { name, email, address, password } = req.body;
+  const photo = req.files ? req.files.photo : null;
 
   if (
-    !firstName ||
-    !lastName ||
+    !name ||
     !email ||
-    !phone ||
     !address ||
-    !password ||
-    !confirmPassword
+    !password
   ) {
-    res.send({
-      status: 400,
-      message: 'Не заполнены все обязательные поля'
-    });
+    logger('Register, Заполнены не все поля');
 
-    return;
-  }
-
-  if (password !== confirmPassword) {
     res.send({
-      status: 400,
-      message: 'Пароли не совпадают',
+      status: 500,
+      message: 'Заполнены не все поля',
     });
 
     return;
@@ -131,10 +120,18 @@ exports.register = function(req, res) {
   `, [email], function(error, user) {
     if (error) {
       logger(error.message);
+
+      res.send({
+        status: 500,
+        message: 'Ошибка при регистрации',
+      });
+
       return;
     }
 
     if (user) {
+      logger('Register, пользователь с таким email уже существует');
+
       res.send({
         status: 500,
         message: 'Пользователь с таким email уже существует',
@@ -144,32 +141,88 @@ exports.register = function(req, res) {
     }
 
     const token = uuidv4();
+    let lastID = 0;
 
     db.run(`
-      INSERT INTO user (firstName, lastName, email, phone, address, photo, hash, token)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO user (name, email, address, photo, hash, token)
+      VALUES (?, ?, ?, ?, ?, ?)
     `, [
-      firstName,
-      lastName,
+      name,
       email,
-      phone,
       address,
-      photo,
+      '/images/user-image.jpg',
       passwordHash.generate(password),
       token,
     ], function(error) {
       if (error) {
-        logger(error.message);
+        logger('Register, ошибка при внесении нового пользователя в бд');
+
+        res.send({
+          status: 500,
+          message: 'Пользователь с таким email уже существует',
+        });
+
         return;
       }
 
-      res.send({
-        status: 200,
+      lastID = this.lastID;
 
-        user: {
-          id: this.lastID,
-          token,
-        },
+      if (!photo) {
+        res.send({
+          status: 200,
+
+          user: {
+            id: lastID,
+            token,
+          },
+        });
+
+        return;
+      }
+      console.log(photo.mv);
+
+      createUserPhotoDir(lastID);
+
+      photo.mv(`${process.env.ROOT_PATH}/upload/users/${lastID}/${photo.name}`, function(error) {
+        if (error) {
+          logger(error);
+
+          res.send({
+            status: 500,
+            message: 'Ошибка при регистрации',
+          });
+
+          return;
+        }
+
+        db.run(`
+          UPDATE user
+          SET photo = ?
+          WHERE id = ?
+        `, [
+          `users/${lastID}/${photo.name}`,
+          lastID,
+        ], (error) => {
+          if (error) {
+            logger(error.message);
+
+            res.send({
+              status: 500,
+              message: 'Ошибка при регистрации',
+            });
+
+            return;
+          }
+
+          res.send({
+            status: 200,
+
+            user: {
+              id: lastID,
+              token,
+            },
+          });
+        });
       });
     });
   });
@@ -188,8 +241,7 @@ exports.register = function(req, res) {
  *       "status": 200,
  *       "user": {
  *         "id": 1,
- *         "firstName": "Петр",
- *         "lastName": "Петров",
+ *         "name": "Петр Петров",
  *         "email": "petr@gmail.com",
  *         "phone": "+79099993344",
  *         "address": "Ростов-на-Дону, Красноармейская, 11",
@@ -213,8 +265,7 @@ exports.getCurrentUser = function(req, res) {
 
   db.get(`
     SELECT id,
-           firstName,
-           lastName,
+           name,
            email,
            phone,
            address,
@@ -258,8 +309,7 @@ exports.getCurrentUser = function(req, res) {
  *       "status": 200,
  *       "user": {
  *         "id": 1,
- *         "firstName": "Петр",
- *         "lastName": "Петров",
+ *         "name": "Петр Петров",
  *         "email": "petr@gmail.com",
  *         "phone": "+79099993344",
  *         "address": "Ростов-на-Дону, Красноармейская, 11",
@@ -282,8 +332,7 @@ exports.getUser = function(req, res, idUser) {
 
   db.get(`
     SELECT id,
-           firstName,
-           lastName,
+           name,
            email,
            phone,
            address,
@@ -323,16 +372,14 @@ exports.getUser = function(req, res, idUser) {
  *       "status": 200,
  *       "user": [{
  *         "id": 1,
- *         "firstName": "Петр",
- *         "lastName": "Петров",
+ *         "name": "Петр Петров",
  *         "email": "petr@gmail.com",
  *         "phone": "+79099993344",
  *         "address": "Ростов-на-Дону, Красноармейская, 11",
  *         "photo": "/images/user-image.jpg",
  *       }, {
  *         "id": 2,
- *         "firstName": "Иван",
- *         "lastName": "Иванов",
+ *         "name": "Иван Иванов",
  *         "email": "ivan@gmail.com",
  *         "phone": "+79099993344",
  *         "address": "Ростов-на-Дону, Красноармейская, 11",
@@ -343,8 +390,7 @@ exports.getUser = function(req, res, idUser) {
 exports.getUsers = function(req, res) {
   db.all(`
     SELECT id,
-           firstName,
-           lastName,
+           name,
            email,
            phone,
            address,
@@ -384,20 +430,17 @@ exports.getUsers = function(req, res) {
  *       "user": [{
  *         "likes": 143,
  *         "id": 1,
- *         "firstName": "Петр",
- *         "lastName": "Петров",
+ *         "name": "Петр Петров",
  *         "photo": "/images/user-image.jpg",
  *       }, {
  *         "likes": 83,
  *         "id": 2,
- *         "firstName": "Иван",
- *         "lastName": "Иванов",
+ *         "name": "Иван Иванов",
  *         "photo": "/images/user-image.jpg",
  *       }, {
  *         "likes": 43,
  *         "id": 3,
- *         "firstName": "Сергей",
- *         "lastName": "Сергеев",
+ *         "name": "Сергей Сергеев",
  *         "photo": "/images/user-image.jpg",
  *       }]
  *     }
@@ -406,8 +449,7 @@ exports.getbestSalers = function(req, res) {
   db.all(`
     SELECT DISTINCT count(review.id) as likes,
                     user.id,
-                    user.firstName,
-                    user.lastName,
+                    user.name,
                     user.photo
     FROM user, review
     WHERE user.id = review.idRecipient

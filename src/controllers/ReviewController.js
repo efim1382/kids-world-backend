@@ -65,16 +65,14 @@ exports.addReview = function(req, res) {
  *       "reviews": [{
  *         "idRecipient": 1,
  *         "idAuthor": 2,
- *         "firstName": "Петр",
- *         "lastName": "Петров",
+ *         "name": "Петр Петров",
  *         "photo": "/images/user-image.jpg",
  *         "text": "Хороший продавец",
  *         "emotion": "like"
  *       }, {
  *         "idRecipient": 3,
  *         "idAuthor": 5,
- *         "firstName": "Иван",
- *         "lastName": "Иванов",
+ *         "name": "Иван Иванов",
  *         "photo": "/images/user-image.jpg",
  *         "text": "Плохой продавец",
  *         "emotion": "dislike"
@@ -99,8 +97,7 @@ exports.getUserReviews = function(req, res) {
     SELECT review.id as id,
            user.id as idRecipient,
            review.idAuthor as idAuthor,
-           user.firstName,
-           user.lastName,
+           user.name,
            user.photo,
            review.text,
            review.emotion

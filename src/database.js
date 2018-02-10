@@ -10,8 +10,7 @@ module.exports = function() {
     db.run(`PRAGMA foreign_keys = ON`);
     db.run(`CREATE TABLE IF NOT EXISTS user (
       id integer PRIMARY KEY AUTOINCREMENT,
-      firstName varchar(30),
-      lastName varchar(50),
+      name varchar(50),
       email varchar(150),
       phone varchar(12),
       address varchar(255),

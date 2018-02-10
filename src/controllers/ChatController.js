@@ -90,8 +90,7 @@ exports.getUserChats = function(req, res) {
 
   db.all(`
     SELECT chatUser.idChat as idChat,
-           user.firstName as firstName,
-           user.lastName as lastName,
+           user.name as name,
            user.photo as photo,
            chat.lastMessage as lastMessage
     FROM (

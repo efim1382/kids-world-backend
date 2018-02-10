@@ -20,9 +20,8 @@ const rimraf = require('rimraf');
  *         "price": 1250
  *         "category": "footwear"
  *         "mainImage": "/images/ad-image.jpg"
- *         "userId": 3
- *         "firstName": "Петр"
- *         "lastName": "Петров"
+ *         "userId": 3,
+ *         "name": "Петр Петров",
  *         "address": "Ростов-на-Дону, Красноармейская, 12"
  *         "photo": "/images/user-image.jpg"
  *       }]
@@ -37,8 +36,7 @@ exports.getAdverts = function(req, res) {
            advert.category,
            advert.mainImage,
            user.id as userId,
-           user.firstName,
-           user.lastName,
+           user.name,
            user.address,
            user.photo
     FROM advert, user
@@ -88,8 +86,7 @@ exports.getAdverts = function(req, res) {
  *         "category": "footwear",
  *         "mainImage": "/images/ad-image.jpg",
  *         "userId": 3,
- *         "firstName": "Петр",
- *         "lastName": "Петров",
+ *         "name": "Петр Петров",
  *         "address": "Ростов-на-Дону, Красноармейская, 12",
  *         "isFavorite": "true",
  *         "photo": "/images/user-image.jpg"
@@ -107,8 +104,7 @@ exports.getAdvertsLogged = function(req, res) {
            advert.category as category,
            advert.mainImage as mainImage,
            user.id as userId,
-           user.firstName as firstName,
-           user.lastName as lastName,
+           user.name as name,
            user.address as address,
            user.photo as photo,
            CASE WHEN EXISTS (
@@ -160,8 +156,7 @@ exports.getAdvertsLogged = function(req, res) {
  *         "category": "footwear"
  *         "mainImage": "/images/ad-image.jpg"
  *         "userId": 3
- *         "firstName": "Петр"
- *         "lastName": "Петров"
+ *         "name": "Петр Петров",
  *         "address": "Ростов-на-Дону, Красноармейская, 12"
  *         "email": "petr@gmail.com"
  *         "photo": "/images/user-image.jpg"
@@ -191,8 +186,7 @@ exports.getAdvert = function(req, res) {
            advert.description,
            advert.mainImage,
            user.id as userId,
-           user.firstName,
-           user.lastName,
+           user.name,
            user.address,
            user.email,
            user.phone,
