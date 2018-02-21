@@ -8,13 +8,6 @@ db.serialize(function() {
 			return;
 		}
 	});
-
-	db.run('DELETE FROM favorites', function(error) {
-		if (error) {
-			logger(error.message);
-			return;
-		}
-	});
 });
 
 db.close();
