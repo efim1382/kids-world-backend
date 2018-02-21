@@ -1,31 +1,31 @@
 {
-  "name": "kids-world-backend",
-  "version": "0.0.1",
-  "description": "",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/efim1382/kids-world-backend.git"
-  },
-  "scripts": {
-    "start": "supervisor server.js",
-    "clean": "node clean.js",
-    "seed": "node seed.js",
-    "docs": "apidoc -i ./src/controllers"
-  },
-  "author": "efim1382@gmail.com",
-  "license": "ISC",
-  "homepage": "https://github.com/efim1382/kids-world-backend#readme",
-  "dependencies": {
-    "body-parser": "^1.17.2",
-    "express": "^4.15.3",
-    "express-fileupload": "^0.3.0",
-    "fs": "0.0.1-security",
-    "password-hash": "^1.2.2",
-    "path": "^0.12.7",
-    "rimraf": "^2.6.2",
-    "socket.io": "^2.0.4",
-    "sqlite3": "^3.1.13",
-    "supervisor": "^0.12.0",
-    "uuid": "^3.1.0"
-  }
+	"name": "kids-world-backend",
+	"version": "0.0.1",
+	"description": "",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/efim1382/kids-world-backend.git"
+	},
+	"scripts": {
+		"start": "supervisor server.js",
+		"clean": "node clean.js",
+		"seed": "npm run clean && node seed.js",
+		"docs": "apidoc -i ./src/controllers"
+	},
+	"author": "efim1382@gmail.com",
+	"license": "ISC",
+	"homepage": "https://github.com/efim1382/kids-world-backend#readme",
+	"dependencies": {
+		"body-parser": "^1.17.2",
+		"express": "^4.15.3",
+		"express-fileupload": "^0.3.0",
+		"fs": "0.0.1-security",
+		"password-hash": "^1.2.2",
+		"path": "^0.12.7",
+		"rimraf": "^2.6.2",
+		"socket.io": "^2.0.4",
+		"sqlite3": "^3.1.13",
+		"supervisor": "^0.12.0",
+		"uuid": "^3.1.0"
+	}
 }
