@@ -38,10 +38,15 @@ module.exports = function() {
     db.run(`CREATE TABLE IF NOT EXISTS review (
       id integer PRIMARY KEY AUTOINCREMENT,
       text text(500),
-      idAuthor integer,
-      idRecipient integer,
-      emotion varchar(7),
-      FOREIGN KEY (idAuthor) REFERENCES user(id) ON DELETE CASCADE
+      emotion varchar(7)
+    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS reviewUser (
+      id integer PRIMARY KEY AUTOINCREMENT,
+      idUser integer,
+      idReview integer,
+      type varchar(9),
+      FOREIGN KEY (idUser) REFERENCES user(id) ON DELETE CASCADE
+      FOREIGN KEY (idReview) REFERENCES review(id) ON DELETE CASCADE
     )`);
     db.run(`CREATE TABLE IF NOT EXISTS favorites (
       id integer PRIMARY KEY AUTOINCREMENT,

@@ -451,8 +451,10 @@ exports.getbestSalers = function(req, res) {
                     user.id,
                     user.name,
                     user.photo
-    FROM user, review
-    WHERE user.id = review.idRecipient
+    FROM user, review, reviewUser
+    WHERE user.id = reviewUser.idUser
+    AND reviewUser.type = 'recipient'
+    AND reviewUser.idReview = review.id
     AND review.emotion = 'like'
     GROUP BY user.id
     LIMIT 3

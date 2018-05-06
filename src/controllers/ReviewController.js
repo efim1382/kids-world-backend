@@ -33,9 +33,9 @@ exports.addReview = function(req, res) {
   }
 
   db.run(`
-    INSERT INTO review (idAuthor, idRecipient, emotion, text)
-    VALUES (?, ?, ?, ?)
-  `, [idAuthor, idRecipient, emotion, text], function(error) {
+    INSERT INTO review (text, emotion)
+    VALUES (?, ?)
+  `, [text, emotion], function(error) {
     if (error) {
       logger(error.message);
 
@@ -47,7 +47,21 @@ exports.addReview = function(req, res) {
       return;
     }
 
-    res.send({ status: 200 });
+    const idNewReview = this.lastID;
+
+    db.serialize(function() {
+      db.run(`
+        INSERT INTO reviewUser (idUser, idReview, type)
+        VALUES (?, ?, ?)
+      `, [idAuthor, idNewReview, 'author']);
+
+      db.run(`
+        INSERT INTO reviewUser (idUser, idReview, type)
+        VALUES (?, ?, ?)
+      `, [idRecipient, idNewReview, 'recipient']);
+
+      res.send({ status: 200 });
+    });
   });
 };
 
@@ -63,14 +77,12 @@ exports.addReview = function(req, res) {
  *     {
  *       "status": 200
  *       "reviews": [{
- *         "idRecipient": 1,
  *         "idAuthor": 2,
  *         "name": "Петр Петров",
  *         "photo": "/images/user-image.jpg",
  *         "text": "Хороший продавец",
  *         "emotion": "like"
  *       }, {
- *         "idRecipient": 3,
  *         "idAuthor": 5,
  *         "name": "Иван Иванов",
  *         "photo": "/images/user-image.jpg",
@@ -94,18 +106,21 @@ exports.getUserReviews = function(req, res) {
   }
 
   db.all(`
-    SELECT review.id as id,
-           user.id as idRecipient,
-           review.idAuthor as idAuthor,
-           user.name,
-           user.photo,
-           review.text,
-           review.emotion
-    FROM user, review
-    WHERE user.id = review.idAuthor
-    AND review.idRecipient = ?
-    ORDER BY review.id
-    DESC
+    SELECT reviewUser.idUser as idAuthor,
+           user.name as name,
+           user.photo as photo,
+           review.text as text,
+           review.emotion as emotion
+    FROM (
+      SELECT idReview, idUser
+      FROM reviewUser
+      WHERE idUser = ?
+      AND type = 'recipient'
+    ) recipientReviews
+    INNER JOIN review ON review.id = recipientReviews.idReview
+    INNER JOIN reviewUser ON reviewUser.idReview = recipientReviews.idReview
+    INNER JOIN user ON user.id = reviewUser.idUser
+    WHERE reviewUser.type = 'author'
   `, [id], function(error, reviews) {
     if (error) {
       logger(error.message);
