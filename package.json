@@ -16,6 +16,7 @@
 	"license": "ISC",
 	"homepage": "https://github.com/efim1382/kids-world-backend#readme",
 	"dependencies": {
+		"apidoc": "^0.17.6",
 		"body-parser": "^1.17.2",
 		"express": "^4.15.3",
 		"express-fileupload": "^0.3.0",
