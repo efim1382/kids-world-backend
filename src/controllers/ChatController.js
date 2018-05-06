@@ -2,6 +2,23 @@ const db = require('../database')();
 const User = require('./UserController');
 const { logger } = require('../functions');
 
+/**
+ * @api {post} /chat/create createChat
+ * @apiGroup Chat
+ *
+ * @apiDescription Создать чат с пользователем
+ *
+ * @apiParam {Number} idAuthor Id пользователя, создающего чат.
+ * @apiParam {Number} idRecipient Id пользователя, с кем необходимо создать чат.
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200
+ *       "chat": {
+ *         "id": 1,
+ *       },
+ *     }
+ */
 exports.createChat = function(req, res) {
   const { idAuthor, idRecipient } = req.body;
   let idNewChat = 0;
@@ -85,6 +102,25 @@ exports.createChat = function(req, res) {
   });
 };
 
+/**
+ * @api {get} /chats/user/:id getUserChats
+ * @apiGroup Chat
+ *
+ * @apiDescription Получить список чатов пользователя
+ *
+ * @apiParam {Number} id Id пользователя
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200
+ *       "chats": [{
+ *         "idChat": 1,
+ *         "name": "Иван Иванов",
+ *         "photo": "/images/user-image.jpg",
+ *         "lastMessage": "Добрый день",
+ *       }],
+ *     }
+ */
 exports.getUserChats = function(req, res) {
   const { id } = req.params;
 
@@ -121,6 +157,24 @@ exports.getUserChats = function(req, res) {
   });
 };
 
+/**
+ * @api {get} /chat/:id/messages getChatMessages
+ * @apiGroup Chat
+ *
+ * @apiDescription Получить сообщения чата
+ *
+ * @apiParam {Number} id Id чата
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200
+ *       "messages": [{
+ *         "idMessage": 1,
+ *         "idUser": 1,
+ *         "text": "Добрый день",
+ *       }],
+ *     }
+ */
 exports.getChatMessages = function(req, res) {
   const { id } = req.params;
 
@@ -152,6 +206,28 @@ exports.getChatMessages = function(req, res) {
   });
 };
 
+/**
+ * @api {get} /chat/:id/user/currentUser/:userId getChatUser
+ * @apiGroup Chat
+ *
+ * @apiDescription Получить пользователя, с которым переписываешься
+ *
+ * @apiParam {Number} id Id чата
+ * @apiParam {Number} id Id пользователя
+ *
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status": 200
+ *       "user": {
+ *         "id": 1,
+ *         "name": "Петр Петров",
+ *         "email": "petr@gmail.com",
+ *         "phone": "+79099993344",
+ *         "address": "Ростов-на-Дону, Красноармейская, 11",
+ *         "photo": "/images/user-image.jpg",
+ *       }
+ *     }
+ */
 exports.getChatUser = function(req, res) {
   const { id, userId } = req.params;
 
